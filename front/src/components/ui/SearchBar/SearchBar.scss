@@ -1,0 +1,108 @@
+.search-bar-wrapper {
+  position: relative;
+  margin-right: 50px;
+
+  .form-control {
+    width: 500px;
+    border: 1px solid #E1E1E1;
+
+    &:focus {
+      border-color: #80bdff;
+    }
+  }
+
+  .search-btn {
+    position: absolute;
+    right: 0;
+    color: white;
+    background-color: var(--orange-color);
+    line-height: normal;
+    width: 50px;
+    height: 100%;
+  }
+
+  .resetKey {
+    position: absolute;
+    right: 50px;
+    color: #555;
+    line-height: normal;
+    width: 50px;
+    height: 100%;
+    display: none;
+
+    &.active {
+      display: block;
+    }
+  }
+
+  .loading {
+    position: absolute;
+    right: 60px;
+    display: grid;
+    place-items: center;
+    height: 100%;
+  }
+
+  .search-result {
+    position: absolute;
+    background-color: white;
+    z-index: 1000;
+    box-shadow: 0 0 5px 1px rgba(0, 0, 0, 0.15);
+    width: 100%;
+
+    .item {
+      display: flex;
+      align-items: center;
+      padding: 4px 6px;
+      border-bottom: 1px solid #ddd;
+      font-size: 14px;
+
+      img {
+        height: 80px;
+        object-fit: contain;
+      }
+
+      .bookInfo {
+        margin-left: 10px;
+      }
+    }
+  }
+
+  .img {
+    flex-shrink: 0;
+    width: 100px;
+  }
+
+  .name {
+    font-weight: 500;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: 576px) {
+  .search-bar-wrapper {
+    width: 100%;
+
+    .form-control {
+      width: 100%;
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+
+    .search-btn {
+      width: 40px;
+      line-height: 40px;
+    }
+
+    .resetKey {
+      right: 40px;
+      width: 40px;
+      line-height: 40px;
+    }
+  }
+}

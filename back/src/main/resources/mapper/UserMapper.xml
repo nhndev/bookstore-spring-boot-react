@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nhn.mapper.UserMapper">
+    <select id="getUserRoleInfoByEmail" resultType="com.nhn.model.dto.response.user.AuthUserRoleInfo">
+        SELECT
+            bu.id,
+            full_name,
+            email,
+            phone_number,
+            password,
+            avatar_url,
+            status,
+            br.id AS role_id,
+            br.name AS role_name,
+            br.role_no
+        FROM
+            bs_users bu
+            INNER JOIN bs_roles br ON bu.role_id = br.id
+       WHERE
+            email = #{email}
+    </select>
+</mapper>

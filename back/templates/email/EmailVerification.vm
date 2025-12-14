@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+    <h3>Xin chào ${fullName}, </h3>
+    <p>Cảm ơn bạn đã đăng ký tài khoản tại BookStore với email ${email}.</p>
+
+    <p>Để hoàn tất quá trình đăng ký và kích hoạt tài khoản của bạn, vui lòng xác nhận địa chỉ email bằng cách nhấp vào liên kết bên dưới:</p>
+
+    <a href="${verifyURL}"><h3>Xác minh email</h3></a>
+
+    <p>Nếu bạn không tạo tài khoản này, vui lòng bỏ qua email này.</p>
+    <p>Xin cảm ơn,</p>
+    <p>BookStore</p>
+</body>
+</html>

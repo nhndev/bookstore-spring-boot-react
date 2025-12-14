@@ -1,0 +1,21 @@
+.login-page {
+  .forgot-password {
+    color: red;
+  }
+
+  .submit-btn {
+    padding: 8px 12px;
+    width: 100%;
+    background-color: var(--orange-color);
+    color: white;
+    margin: 10px 0;
+  }
+}
+
+.sent {
+  background-color: #f6f8fa;
+}
+
+.info {
+  font-weight: 500;
+}

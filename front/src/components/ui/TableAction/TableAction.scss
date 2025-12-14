@@ -1,0 +1,29 @@
+.table-action {
+  :hover {
+    cursor: pointer;
+    scale: 1.05
+  }
+  .wrapper {
+    height: 28px;
+    width: 28px;
+    margin: 0 auto;
+    display: grid;
+    place-content: center;
+    border-radius: 2px;
+  }
+
+  svg {
+    font-size: 16px;
+    color: white;
+    display: grid;
+    place-content: center;
+  }
+
+  &.edit .wrapper {
+    background-color: rgb(65, 189, 255);
+  }
+
+  &.delete .wrapper {
+    background-color: rgb(244, 67, 54);
+  }
+}

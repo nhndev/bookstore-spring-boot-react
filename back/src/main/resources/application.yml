@@ -1,0 +1,69 @@
+server:
+  port: 8080
+  forward-headers-strategy: framework
+app:
+  origin:
+    api: http://localhost:8080
+    web: http://localhost:4200
+
+spring:
+  application:
+    name: bookstore-api
+  datasource:
+    url: jdbc:postgresql://localhost:15432/bookstore
+    username: changeme
+    password: changeme
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: true
+    locations:
+      - classpath:db/migration
+  # Mail server
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: changeme
+    password: changeme
+    template: ./templates/email
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  # Redis caching
+  cache:
+    type: redis
+  redis:
+    host: localhost
+    port: 30379
+    user: changeme
+    password: changeme
+    ssl: false
+    timeout: 60000
+    connTimeout: 5000
+    maxActive: 10
+    maxIdle: 10
+    minIdle: 0
+    maxWait: 5000
+
+mybatis:
+  mapper-locations:
+    - classpath:mapper/**/*Mapper.xml
+  configuration:
+    map-underscore-to-camel-case: true
+  type-handlers-package: com.nhn.mapper.handler
+
+jwt:
+  secret-key: changeme
+  expiration-accessToken: 86400
+
+#Cloudinary
+cloudinary:
+  cloud-name: changeme
+  api-key: 659949768548165
+  api-secret: changeme
