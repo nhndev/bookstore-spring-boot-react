@@ -1,7 +1,7 @@
 import { useFormik } from 'formik';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import * as Yup from 'yup';
-import { Button, Col, Modal, Row, Table } from 'react-bootstrap';
+import { Button, Card, Modal, Table } from 'react-bootstrap';
 import TextField from '../../../components/ui/TextField';
 import validationUtil from '../../../utils/validation.util';
 import { AUTHOR } from '../../../constants/label';
@@ -13,17 +13,16 @@ import Pagination from '../../../components/ui/Pagination';
 import messageUtil from '../../../utils/message.util';
 import TableAction from '../../../components/ui/TableAction';
 import { showConfirmDialog } from '../../../redux/slice/confirmDialog.slice';
+import { FaPlus, FaSearch, FaUsers, FaPen, FaInbox } from 'react-icons/fa';
+import '../management-common.scss';
 
 function AuthorManagementPage() {
   const isLoading = useSelector((state) => state.app.isLoading);
   const [searchCondition, setSearchCondition] = useState(null);
   const [data, setData] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
-
   const [pageNum, setPageNum] = useState(1);
-
   const dispatch = useDispatch();
-
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -34,20 +33,19 @@ function AuthorManagementPage() {
   const fetchData = useCallback(
     async (pageNum) => {
       try {
-        setLoading(true);
+        dispatch(setLoading(true));
         const { data, totalItems } = await authorService.search({
           pageNum,
           pageSize: PAGINATION.PAGE_SIZE,
           name: searchCondition?.name || null,
         });
-
         setData(data);
         setTotalItems(totalItems);
       } finally {
-        setLoading(false);
+        dispatch(setLoading(false));
       }
     },
-    [searchCondition]
+    [searchCondition, dispatch],
   );
 
   useEffect(() => {
@@ -65,10 +63,10 @@ function AuthorManagementPage() {
       if (!data) {
         return;
       }
-      editFormik.values.id = id;
-      editFormik.values.name = data.name;
-      editFormik.values.parent = data.parentId ?? '';
-      editFormik.values.currentImage = data.imageUrl;
+      editFormik.setValues({
+        id,
+        name: data.name,
+      });
       setShowEditModal(true);
     } finally {
       dispatch(setLoading(false));
@@ -79,10 +77,10 @@ function AuthorManagementPage() {
     dispatch(
       showConfirmDialog({
         message: messageUtil.getDeleteConfirmationMsg(
-          `xoá <strong>Danh mục ${item.name}</strong>`
+          `xoá <strong>Tác giả ${item.name}</strong>`,
         ),
         okFunc: () => deleteRecord(item.id),
-      })
+      }),
     );
   };
 
@@ -98,9 +96,7 @@ function AuthorManagementPage() {
   };
 
   const createFormik = useFormik({
-    initialValues: {
-      name: '',
-    },
+    initialValues: { name: '' },
     enableReinitialize: true,
     validateOnChange: false,
     validateOnBlur: true,
@@ -125,10 +121,7 @@ function AuthorManagementPage() {
   });
 
   const editFormik = useFormik({
-    initialValues: {
-      id: '',
-      name: '',
-    },
+    initialValues: { id: '', name: '' },
     enableReinitialize: true,
     validateOnChange: false,
     validateOnBlur: true,
@@ -151,32 +144,8 @@ function AuthorManagementPage() {
     },
   });
 
-  const onSearch = async (e) => {
-    e.preventDefault();
-    const { name } = searchFormik.values;
-    if (!name) {
-      dispatch(
-        showConfirmDialog({
-          message: messageUtil.getSearchConditionMissing(),
-        })
-      );
-      return;
-    }
-    setSearchCondition({ name });
-    setPageNum(1);
-  };
-
-  const onResetSearch = (e) => {
-    e.preventDefault();
-    setSearchCondition(null);
-    searchFormik.resetForm();
-    setPageNum(1);
-  };
-
   const searchFormik = useFormik({
-    initialValues: {
-      name: '',
-    },
+    initialValues: { name: '' },
     enableReinitialize: true,
     validateOnChange: false,
     validateOnBlur: true,
@@ -187,180 +156,220 @@ function AuthorManagementPage() {
     }),
   });
 
+  const onSearch = (e) => {
+    e.preventDefault();
+    const { name } = searchFormik.values;
+    setSearchCondition(name ? { name } : null);
+    setPageNum(1);
+  };
+
+  const formatDateTime = (value) => {
+    if (!value) return '—';
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? '—' : d.toLocaleString('vi-VN');
+  };
+
+  const onResetSearch = (e) => {
+    e.preventDefault();
+    setSearchCondition(null);
+    searchFormik.resetForm();
+    setPageNum(1);
+  };
+
+  const handleCloseAddModal = () => {
+    createFormik.resetForm();
+    setShowAddModal(false);
+  };
+
+  const handleCloseEditModal = () => {
+    editFormik.resetForm();
+    setShowEditModal(false);
+  };
+
   return (
-    <Row>
-      <Modal
-        size="lg"
-        show={showEditModal}
-        onHide={() => setShowEditModal(false)}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Chỉnh sửa thông tin Tác giả</Modal.Title>
+    <div className="management-page author-management">
+      {/* Edit Modal */}
+      <Modal centered show={showEditModal} onHide={handleCloseEditModal}>
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title className="d-flex align-items-center gap-2 fs-5">
+            <span className="modal-icon bg-primary rounded-2 d-flex align-items-center justify-content-center text-white">
+              <FaPen />
+            </span>
+            Chỉnh sửa Tác giả
+          </Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          <form>
-            <Row>
-              <Col xl={12}>
-                <TextField
-                  label={AUTHOR.NAME}
-                  name="name"
-                  maxLength={255}
-                  value={editFormik.values.name}
-                  touched={editFormik.touched.name}
-                  handleChange={editFormik.handleChange}
-                  handleBlur={editFormik.handleBlur}
-                  error={editFormik.errors.name}
-                />
-              </Col>
-            </Row>
-          </form>
+        <Modal.Body className="pt-3">
+          <TextField
+            label={AUTHOR.NAME}
+            name="name"
+            maxLength={255}
+            value={editFormik.values.name}
+            touched={editFormik.touched.name}
+            handleChange={editFormik.handleChange}
+            handleBlur={editFormik.handleBlur}
+            error={editFormik.errors.name}
+          />
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer className="border-0 pt-0">
+          <Button variant="light" onClick={handleCloseEditModal}>
+            Huỷ bỏ
+          </Button>
           <Button
+            variant="primary"
             onClick={editFormik.handleSubmit}
             disabled={isLoading}
-            type="submit"
-            variant="success"
-            className="mt-2"
           >
-            Lưu
+            Lưu thay đổi
           </Button>
         </Modal.Footer>
       </Modal>
-      <Modal
-        size="lg"
-        show={showAddModal}
-        onHide={() => setShowAddModal(false)}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Thêm Tác giả</Modal.Title>
+
+      {/* Add Modal */}
+      <Modal centered show={showAddModal} onHide={handleCloseAddModal}>
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title className="d-flex align-items-center gap-2 fs-5">
+            <span className="modal-icon bg-success rounded-2 d-flex align-items-center justify-content-center text-white">
+              <FaPlus />
+            </span>
+            Thêm Tác giả mới
+          </Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          <form>
-            <Row>
-              <Col xl={12}>
-                <TextField
-                  label={AUTHOR.NAME}
-                  name="name"
-                  maxLength={255}
-                  value={createFormik.values.name}
-                  touched={createFormik.touched.name}
-                  handleChange={createFormik.handleChange}
-                  handleBlur={createFormik.handleBlur}
-                  error={createFormik.errors.name}
-                />
-              </Col>
-            </Row>
-          </form>
+        <Modal.Body className="pt-3">
+          <TextField
+            label={AUTHOR.NAME}
+            name="name"
+            maxLength={255}
+            value={createFormik.values.name}
+            touched={createFormik.touched.name}
+            handleChange={createFormik.handleChange}
+            handleBlur={createFormik.handleBlur}
+            error={createFormik.errors.name}
+          />
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer className="border-0 pt-0">
+          <Button variant="light" onClick={handleCloseAddModal}>
+            Huỷ bỏ
+          </Button>
           <Button
+            variant="success"
             onClick={createFormik.handleSubmit}
             disabled={isLoading}
-            type="submit"
-            variant="success"
-            className="mt-2"
           >
-            Lưu
+            Thêm mới
           </Button>
         </Modal.Footer>
       </Modal>
-      <Col xl={12}>
-        <div className="admin-content-wrapper">
-          <div className="admin-content-header">Danh sách Tác giả</div>
-          <div className="admin-content-search-condition">
-            <form>
-              <Row>
-                <Col xl={6}>
-                  <TextField
-                    name="name"
-                    maxLength={255}
-                    value={searchFormik.values.name}
-                    handleChange={searchFormik.handleChange}
-                    handleBlur={searchFormik.handleBlur}
-                    placeholder="Tìm kiếm tác giả"
-                  />
-                </Col>
-              </Row>
-              <Row className="action-menu">
-                <Col xl={12}>
-                  <Button
-                    onClick={(e) => onResetSearch(e)}
-                    disabled={isLoading}
-                    type="submit"
-                    className="mt-2"
-                    variant="secondary"
-                  >
-                    Huỷ bộ lọc tìm kiếm
-                  </Button>
-                  <Button
-                    onClick={(e) => onSearch(e)}
-                    disabled={isLoading}
-                    type="submit"
-                    className="mt-2"
-                  >
-                    Tìm kiếm
-                  </Button>
-                </Col>
-              </Row>
-            </form>
+
+      {/* Page Header */}
+      <div className="d-flex align-items-center justify-content-between mb-4">
+        <div className="d-flex align-items-center gap-3">
+          <div className="page-icon rounded-3 d-flex align-items-center justify-content-center text-white">
+            <FaUsers />
           </div>
-          <div className="admin-content-action">
-            <div className="d-flex">
-              <button
-                type="button"
-                className="btn btn-success ms-auto"
-                onClick={() => setShowAddModal(true)}
-              >
-                Thêm Tác giả
-              </button>
+          <h4 className="mb-0 fw-bold">Quản lý Tác giả</h4>
+        </div>
+        <Button
+          className="btn-orange px-4"
+          onClick={() => setShowAddModal(true)}
+        >
+          <FaPlus className="me-2" />
+          Thêm mới
+        </Button>
+      </div>
+
+      {/* Search Card */}
+      <Card className="mb-4 shadow-sm border-0">
+        <Card.Body className="py-3">
+          <div className="d-flex gap-3 align-items-center">
+            <div style={{ maxWidth: 350, flex: 1 }}>
+              <TextField
+                name="name"
+                maxLength={255}
+                value={searchFormik.values.name}
+                handleChange={searchFormik.handleChange}
+                handleBlur={searchFormik.handleBlur}
+                placeholder="Tìm kiếm tác giả..."
+              />
             </div>
+            <Button
+              variant="outline-secondary"
+              onClick={onResetSearch}
+              disabled={isLoading}
+            >
+              Xoá lọc
+            </Button>
+            <Button
+              className="btn-search"
+              onClick={onSearch}
+              disabled={isLoading}
+            >
+              <FaSearch className="me-2" />
+              Tìm kiếm
+            </Button>
           </div>
-          <div className="admin-content-body">
-            <Table bordered>
+        </Card.Body>
+      </Card>
+
+      {/* Data Table */}
+      <Card className="shadow-sm border-0">
+        {data && data.length > 0 ? (
+          <>
+            <Table className="mb-0">
               <thead>
                 <tr>
-                  <th>STT</th>
+                  <th className="stt text-center">STT</th>
                   <th>Tên tác giả</th>
-                  <th colSpan="2">Hành động</th>
+                  <th>Ngày tạo</th>
+                  <th>Cập nhật</th>
+                  <th
+                    colSpan={2}
+                    style={{ width: 140 }}
+                    className="text-center"
+                  >
+                    Thao tác
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {data &&
-                  data.length > 0 &&
-                  data.map((item, index) => {
-                    return (
-                      <tr key={item.id}>
-                        <td>
-                          {(pageNum - 1) * PAGINATION.PAGE_SIZE + index + 1}
-                        </td>
-                        <td>{item.name}</td>
-                        <TableAction
-                          onEdit={() => onClickEditBtn(item.id)}
-                          onDelete={() => onClickDeleteBtn(item)}
-                        />
-                      </tr>
-                    );
-                  })}
+                {data.map((item, index) => (
+                  <tr key={item.id}>
+                    <td className="stt text-center">
+                      {(pageNum - 1) * PAGINATION.PAGE_SIZE + index + 1}
+                    </td>
+                    <td className="fw-medium">{item.name}</td>
+                    <td className="text-muted small">{formatDateTime(item.createdAt ?? item.created_at)}</td>
+                    <td className="text-muted small">{formatDateTime(item.updatedAt ?? item.updated_at)}</td>
+                    <TableAction
+                      onEdit={() => onClickEditBtn(item.id)}
+                      onDelete={() => onClickDeleteBtn(item)}
+                    />
+                  </tr>
+                ))}
               </tbody>
             </Table>
-            <div className="admin-content-pagination">
-              <Row>
-                <Col xl={12}>
-                  {totalPages > 1 ? (
-                    <Pagination
-                      totalPage={totalPages}
-                      currentPage={pageNum}
-                      onChangePage={handleChangePage}
-                    />
-                  ) : null}
-                </Col>
-              </Row>
+            <div className="p-3 border-top d-flex align-items-center justify-content-between">
+              <span className="text-muted small">
+                {Math.min(pageNum * PAGINATION.PAGE_SIZE, totalItems)}/{totalItems} kết quả
+              </span>
+              {totalPages > 1 ? (
+                <Pagination
+                  totalPage={totalPages}
+                  currentPage={pageNum}
+                  onChangePage={handleChangePage}
+                />
+              ) : (
+                <div />
+              )}
             </div>
+          </>
+        ) : !isLoading ? (
+          <div className="empty-state text-center text-muted py-5">
+            <FaInbox className="mb-3" />
+            <p className="mb-0">Chưa có tác giả nào</p>
           </div>
-        </div>
-      </Col>
-    </Row>
+        ) : null}
+      </Card>
+    </div>
   );
 }
 

@@ -1,19 +1,32 @@
-import React from 'react';
-import { Link, NavLink } from 'react-router-dom';
-// import { useSelector } from 'react-redux';
-
-// import logo from '../../../assets/images/logo.png';
-// import authApi from '../../../api/authApi';
-// import { logout } from '../../../redux/actions/auth';
-// import { destroy } from '../../../redux/actions/cart';
+import React, { useEffect } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { routes } from '../../../routes';
 import domUtil from '../../../utils/dom.util';
 import './AdminSideBar.scss';
 
 function AdminSideBar() {
-  // const navigate = useNavigate()
-  // const dispatch = useDispatch()
-  // const { role } = useSelector((state) => state.auth);
+  const location = useLocation();
+
+  // Auto expand parent menu if child is active on mount/path change
+  useEffect(() => {
+    const currentPath = location.pathname;
+
+    routes.forEach((item) => {
+      if (item.children && item.children.length > 0) {
+        const hasActiveChild = item.children.some(
+          (child) =>
+            currentPath === child.path ||
+            currentPath.startsWith(child.path + '/'),
+        );
+
+        const collapseId = domUtil.buildAminSidebarItemId(item.name);
+        const collapseEl = document.getElementById(collapseId);
+        if (collapseEl && hasActiveChild) {
+          collapseEl.classList.add('show');
+        }
+      }
+    });
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     // const resultLogout = await authApi.logout()
@@ -26,6 +39,7 @@ function AdminSideBar() {
     // }
     // navigate({ pathname: '/' })
   };
+
   return (
     <div className="admin-sidebar-container">
       <div className="logo">
@@ -40,7 +54,7 @@ function AdminSideBar() {
             return (
               <li className="nav-item mt-1" key={item.name}>
                 <NavLink
-                  data-bs-toggle={item.children && "collapse"}
+                  data-bs-toggle={item.children && 'collapse'}
                   data-bs-target={`#${domUtil.buildAminSidebarItemId(item.name)}`}
                   aria-expanded="true"
                   aria-controls={item.name}

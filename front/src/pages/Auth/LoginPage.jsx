@@ -2,16 +2,17 @@ import React, { useState } from 'react';
 import { Button, Container, Modal } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../../services/auth.service';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../../redux/slice/auth.slice';
+import { setLoading } from '../../redux/slice/app.slice';
 
 import './Auth.scss';
 
 function LoginPage() {
+  const isLoading = useSelector((state) => state.app.isLoading);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  const [loading, setLoading] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
 
@@ -20,20 +21,28 @@ function LoginPage() {
 
   const onSubmitLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    dispatch(setLoading(true));
     try {
       const { data } = await authService.login({ email, password });
       const { accessToken, user } = data;
       localStorage.setItem('accessToken', accessToken);
       const { id, fullName, phoneNumber, role, avatarUrl, permissions } = user;
       dispatch(
-        setUser({ id, email, fullName, phoneNumber, role, avatarUrl, permissions })
+        setUser({
+          id,
+          email,
+          fullName,
+          phoneNumber,
+          role,
+          avatarUrl,
+          permissions,
+        }),
       );
-      navigate({ pathname: '/' })
+      navigate({ pathname: '/' });
     } catch (error) {
       // TODO
     } finally {
-      setLoading(false);
+      dispatch(setLoading(false));
     }
   };
 
@@ -97,8 +106,8 @@ function LoginPage() {
                 Quên mật khẩu?
               </Link>
             </div>
-            <button className="btn submit-btn" disabled={loading}>
-              {loading ? 'Đăng nhập...' : 'Đăng nhập'}
+            <button className="btn submit-btn" disabled={isLoading}>
+              {isLoading ? 'Đăng nhập...' : 'Đăng nhập'}
             </button>
           </form>
           <p className="text-center">

@@ -1,0 +1,111 @@
+// Common styles for management pages
+.management-page {
+  // Page header
+  .page-icon {
+    width: 44px;
+    height: 44px;
+    background: var(--orange-color);
+    border-radius: 10px;
+
+    svg {
+      font-size: 20px;
+    }
+  }
+
+  // Primary orange button
+  .btn-orange {
+    background: var(--orange-color);
+    border: none;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 6px;
+
+    &:hover,
+    &:focus {
+      background: #d4944a;
+      color: white;
+    }
+  }
+
+  // Search button
+  .btn-search {
+    background: #4a5568;
+    border: none;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 6px;
+
+    &:hover,
+    &:focus {
+      background: #2d3748;
+      color: white;
+    }
+  }
+
+  // Card
+  .card {
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+
+  // Simple clean table
+  .table {
+    margin: 0;
+
+    th,
+    td {
+      padding: 12px 16px;
+      border: none;
+      border-bottom: 1px solid #eee;
+    }
+
+    thead th {
+      background: #fafafa;
+      font-weight: 600;
+      font-size: 13px;
+      color: #333;
+    }
+
+    tbody tr:hover {
+      background: #fffbf5;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .stt {
+      width: 60px;
+      text-align: center;
+      color: #888;
+    }
+  }
+
+  // Empty state
+  .empty-state {
+    padding: 60px;
+
+    svg {
+      font-size: 40px;
+      color: #ccc;
+    }
+  }
+}
+
+// Modal
+.modal-icon {
+  width: 32px;
+  height: 32px;
+
+  svg {
+    font-size: 14px;
+  }
+}
+
+// Action buttons
+.table-action .wrapper {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+}

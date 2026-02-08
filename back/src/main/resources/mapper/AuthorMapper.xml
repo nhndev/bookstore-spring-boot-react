@@ -3,12 +3,13 @@
 <mapper namespace="com.nhn.mapper.AuthorMapper">
     <select id="search" resultType="com.nhn.model.entity.book.Author">
         SELECT
-            id, name, slug
+            id, name, slug, created_at, updated_at
         FROM
             bs_authors
         <where>
             <include refid="searchConditionSql"/>
         </where>
+        ORDER BY created_at DESC
         LIMIT #{ pageSize }
         OFFSET (#{ pageNum } - 1) * #{ pageSize }
     </select>

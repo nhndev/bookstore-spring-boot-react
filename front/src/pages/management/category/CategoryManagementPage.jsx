@@ -103,7 +103,7 @@ function CategoryManagementPage() {
               onEdit={() => onClickEditBtn(item.id)}
               onDelete={() => onClickDeleteBtn(item)}
             />
-          </tr>
+          </tr>,
         );
       });
     });
@@ -121,7 +121,7 @@ function CategoryManagementPage() {
       name: 'Không có',
     });
     setCategoryOptions(
-      data.map((item) => ({ key: item.id, value: item.name }))
+      data.map((item) => ({ key: item.id, value: item.name })),
     );
   };
 
@@ -149,10 +149,13 @@ function CategoryManagementPage() {
       if (!data) {
         return;
       }
-      editCategoryFormik.values.id = id;
-      editCategoryFormik.values.name = data.name;
-      editCategoryFormik.values.parent = data.parentId ?? '';
-      editCategoryFormik.values.currentImage = data.imageUrl;
+      editCategoryFormik.setValues({
+        id,
+        name: data.name,
+        parent: data.parentId ?? '',
+        currentImage: data.imageUrl,
+        image: null,
+      });
       await renderCategoryOptions();
       setShowEditModal(true);
     } finally {
@@ -164,10 +167,10 @@ function CategoryManagementPage() {
     dispatch(
       showConfirmDialog({
         message: messageUtil.getDeleteConfirmationMsg(
-          `xoá <strong>Danh mục ${item.name}</strong>`
+          `xoá <strong>Danh mục ${item.name}</strong>`,
         ),
         okFunc: () => deleteCategory(item.id),
-      })
+      }),
     );
   };
 
@@ -201,7 +204,7 @@ function CategoryManagementPage() {
         .test(
           'FILE_SIZE',
           validationUtil.sizeFile(),
-          (value) => !value || (value && value.size < 2 * 1024 * 1024)
+          (value) => !value || (value && value.size < 2 * 1024 * 1024),
         )
         .test(
           'FILE_FORMAT',
@@ -209,7 +212,7 @@ function CategoryManagementPage() {
           (value) =>
             !value ||
             (value &&
-              ['image/png', 'image/gif', 'image/jpeg'].includes(value?.type))
+              ['image/png', 'image/gif', 'image/jpeg'].includes(value?.type)),
         ),
     }),
     onSubmit: async () => {
@@ -219,7 +222,7 @@ function CategoryManagementPage() {
         'data',
         new Blob([JSON.stringify({ name, parentId: parent ? parent : null })], {
           type: 'application/json',
-        })
+        }),
       );
       request.append('file', image);
       try {
@@ -261,7 +264,7 @@ function CategoryManagementPage() {
         .test(
           'FILE_SIZE',
           validationUtil.sizeFile(),
-          (value) => !value || (value && value.size < 2 * 1024 * 1024)
+          (value) => !value || (value && value.size < 2 * 1024 * 1024),
         )
         .test(
           'FILE_FORMAT',
@@ -269,7 +272,7 @@ function CategoryManagementPage() {
           (value) =>
             !value ||
             (value &&
-              ['image/png', 'image/gif', 'image/jpeg'].includes(value?.type))
+              ['image/png', 'image/gif', 'image/jpeg'].includes(value?.type)),
         ),
     }),
     onSubmit: async () => {
@@ -279,7 +282,7 @@ function CategoryManagementPage() {
         'data',
         new Blob([JSON.stringify({ name, parentId: parent ? parent : null })], {
           type: 'application/json',
-        })
+        }),
       );
       request.append('file', image);
       try {
