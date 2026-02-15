@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +21,8 @@ import com.nhn.model.dto.response.author.AuthorInfo;
 import com.nhn.model.entity.book.Author;
 import com.nhn.repository.book.AuthorRepository;
 import com.nhn.util.ErrorMsgUtil;
-import com.nhn.util.SlugUtil;
+import com.nhn.util.PaginationUtil;
+import com.nhn.util.StringUtil;
 import com.nhn.util.UuidUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,9 @@ public class AuthorService {
     private final BookMapping bookMapping;
 
     public PaginationResponse<Author> search(final AuthorSearchRequest request) {
+        PaginationUtil.applySortParams(request, PaginationUtil.TABLE_BS_AUTHORS,
+                                       PaginationUtil.CREATED_AT,
+                                       Sort.Direction.DESC.name());
         final List<Author> list       = this.authorMapper.search(request);
         final Integer      totalItems = this.authorMapper.count(request);
         return PaginationResponse.<Author>builder().data(list)
@@ -78,7 +83,7 @@ public class AuthorService {
             author = this.bookMapping.toAuthor(authorUpdate);
         }
 
-        final String           slug       = SlugUtil.toSlug(name);
+        final String           slug       = StringUtil.toSlug(name);
         final Optional<Author> authorInDB = this.authorRepository.findBySlug(slug);
         if (authorInDB.isPresent()
             && UuidUtil.notEquals(authorInDB.get().getId(), id)) {

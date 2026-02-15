@@ -38,6 +38,7 @@ function ErrorPage() {
 
   const handleClearAndGoLogin = () => {
     dispatch(clearErrorPage());
+    localStorage.removeItem('accessToken');
     window.location.href = '/dang-nhap';
   };
 

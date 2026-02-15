@@ -27,7 +27,7 @@ import com.nhn.repository.book.BookCategoryRepository;
 import com.nhn.service.CloudinaryService;
 import com.nhn.util.ErrorMsgUtil;
 import com.nhn.util.FileUploadUtil;
-import com.nhn.util.SlugUtil;
+import com.nhn.util.StringUtil;
 import com.nhn.util.UuidUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -147,7 +147,7 @@ public class BookCategoryService {
             category = this.bookMapping.toBookCategory(categoryUpdate);
         }
 
-        final String                 slug         = SlugUtil.toSlug(name);
+        final String                 slug         = StringUtil.toSlug(name);
         final Optional<BookCategory> categoryInDB = this.categoryRepository.findBySlug(slug);
         if (categoryInDB.isPresent()
             && UuidUtil.notEquals(categoryInDB.get().getId(), id)) {

@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +21,8 @@ import com.nhn.model.dto.response.book.publisher.BookPublisherInfo;
 import com.nhn.model.entity.book.BookPublisher;
 import com.nhn.repository.book.BookPublisherRepository;
 import com.nhn.util.ErrorMsgUtil;
-import com.nhn.util.SlugUtil;
+import com.nhn.util.PaginationUtil;
+import com.nhn.util.StringUtil;
 import com.nhn.util.UuidUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,10 @@ public class BookPublisherService {
     private final BookMapping bookMapping;
 
     public PaginationResponse<BookPublisher> search(final BookPublisherSearchRequest request) {
+        PaginationUtil.applySortParams(request,
+                                       PaginationUtil.TABLE_BS_PUBLISHERS,
+                                       PaginationUtil.CREATED_AT,
+                                       Sort.Direction.DESC.name());
         final List<BookPublisher> list       = this.bookPublisherMapper.search(request);
         final Integer             totalItems = this.bookPublisherMapper.count(request);
         return PaginationResponse.<BookPublisher>builder().data(list)
@@ -73,7 +79,7 @@ public class BookPublisherService {
             publisher = this.bookMapping.toBookPublisher(publisherUpdate);
         }
 
-        final String                  slug          = SlugUtil.toSlug(name);
+        final String                  slug          = StringUtil.toSlug(name);
         final Optional<BookPublisher> publisherInDB = this.publisherRepository.findBySlug(slug);
         if (publisherInDB.isPresent()
             && UuidUtil.notEquals(publisherInDB.get().getId(), id)) {

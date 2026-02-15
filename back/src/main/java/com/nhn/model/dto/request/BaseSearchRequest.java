@@ -17,4 +17,8 @@ public class BaseSearchRequest {
 
     @Required(message = "pageSize is required")
     private Integer pageSize;
+
+    private String sortBy;
+
+    private String sortOrder;
 }

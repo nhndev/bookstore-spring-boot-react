@@ -19,7 +19,7 @@ import com.nhn.model.entity.book.BookCategory;
 import com.nhn.model.entity.book.BookPublisher;
 import com.nhn.repository.book.*;
 import com.nhn.util.ErrorMsgUtil;
-import com.nhn.util.SlugUtil;
+import com.nhn.util.StringUtil;
 import com.nhn.util.UuidUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -124,7 +124,7 @@ public class BookService {
             bookEntity = this.bookMapping.toBook(request);
         }
 
-        final String         slug     = SlugUtil.toSlug(request.getName());
+        final String         slug     = StringUtil.toSlug(request.getName());
         final Optional<Book> bookInDB = this.bookRepository.findBySlug(slug);
         if (bookInDB.isPresent()
             && UuidUtil.notEquals(bookInDB.get().getId(), id)) {

@@ -9,7 +9,13 @@
         <where>
             <include refid="searchConditionSql"/>
         </where>
-        ORDER BY created_at DESC
+        ORDER BY
+        <choose>
+            <when test="sortBy != null and sortBy != ''">
+                ${sortBy} ${sortOrder}
+            </when>
+            <otherwise>created_at DESC</otherwise>
+        </choose>
         LIMIT #{ pageSize }
         OFFSET (#{ pageNum } - 1) * #{ pageSize }
     </select>

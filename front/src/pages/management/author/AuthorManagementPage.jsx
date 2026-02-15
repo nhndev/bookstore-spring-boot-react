@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import * as Yup from 'yup';
 
 import Pagination from '../../../components/ui/Pagination';
+import SortableTh from '../../../components/ui/SortableTh';
 import TableAction from '../../../components/ui/TableAction';
 import TextField from '../../../components/ui/TextField';
 import { AUTHOR } from '../../../constants/label';
@@ -25,6 +26,8 @@ function AuthorManagementPage() {
   const [data, setData] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
   const [pageNum, setPageNum] = useState(1);
+  const [sortBy, setSortBy] = useState(null);
+  const [sortOrder, setSortOrder] = useState('asc');
   const dispatch = useDispatch();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -41,6 +44,8 @@ function AuthorManagementPage() {
           pageNum,
           pageSize: PAGINATION.PAGE_SIZE,
           name: searchCondition?.name || null,
+          sortBy: sortBy || undefined,
+          sortOrder: sortOrder || undefined,
         });
         setData(data);
         setTotalItems(totalItems);
@@ -50,12 +55,20 @@ function AuthorManagementPage() {
         dispatch(setLoading(false));
       }
     },
-    [searchCondition, dispatch],
+    [searchCondition, sortBy, sortOrder, dispatch],
   );
 
   useEffect(() => {
     fetchData(pageNum);
   }, [pageNum, searchCondition, fetchData]);
+
+  const handleSort = useCallback((field) => {
+    setPageNum(1);
+    setSortBy(field);
+    setSortOrder((order) =>
+      sortBy === field ? (order === 'asc' ? 'desc' : 'asc') : 'asc',
+    );
+  }, [sortBy]);
 
   const handleChangePage = useCallback((page) => {
     setPageNum(page);
@@ -325,9 +338,27 @@ function AuthorManagementPage() {
               <thead>
                 <tr>
                   <th className="stt text-center">STT</th>
-                  <th>Tên tác giả</th>
-                  <th>Ngày tạo</th>
-                  <th>Cập nhật</th>
+                  <SortableTh
+                    label="Tên tác giả"
+                    sortKey="name"
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    onSort={handleSort}
+                  />
+                  <SortableTh
+                    label="Ngày tạo"
+                    sortKey="createdAt"
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    onSort={handleSort}
+                  />
+                  <SortableTh
+                    label="Cập nhật"
+                    sortKey="updatedAt"
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    onSort={handleSort}
+                  />
                   <th
                     colSpan={2}
                     style={{ width: 140 }}
