@@ -65,10 +65,11 @@ public class ErrorMsgUtil {
                                 .build();
     }
 
-    public static BaseErrorResponse createInternalServerErrorResponse(final Exception ex) {
+    public static BaseErrorResponse createInternalServerErrorResponse() {
         return BaseErrorResponse.builder()
                                 .errorCode(HttpStatus.INTERNAL_SERVER_ERROR.name())
-                                .errorMessage(ex.getMessage()).build();
+                                .errorMessage(ErrorCdMsg.INTERNAL_SERVER_ERR_MSG)
+                                .build();
     }
 
     public static BaseErrorResponse createLoginFailedErrorResponse() {

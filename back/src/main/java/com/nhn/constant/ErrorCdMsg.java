@@ -5,7 +5,9 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class ErrorCdMsg {
     public static final String FUNC_UNAUTHORIZED_ERR_MSG = "Vui lòng đăng nhập để tiếp tục!";
-    public static final String FUNC_FORBIDDEN_ERR_MSG = "Bạn không có quyền để thực hiện hành động này. Vui lòng liên hệ quản trị viên để biết thêm chi tiết!";
+    public static final String FUNC_FORBIDDEN_ERR_MSG    = "Bạn không có quyền để thực hiện hành động này. Vui lòng liên hệ quản trị viên để biết thêm chi tiết!";
+
+    public static final String INTERNAL_SERVER_ERR_MSG = "Đã xảy ra lỗi hệ thống. Vui lòng liên hệ quản trị viên để biết thêm chi tiết!";
 
     public static final String CLOUDINARY_UPLOAD_ERR_MSG = "Xảy ra lỗi khi upload hình ảnh lên Cloudinary. Vui lòng thử lại!";
     public static final String CLOUDINARY_DELETE_ERR_MSG = "Xảy ra lỗi khi xóa hình ảnh trên Cloudinary. Vui lòng thử lại!";

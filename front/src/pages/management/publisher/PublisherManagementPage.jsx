@@ -2,24 +2,24 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useFormik } from 'formik';
 import { Button, Card, Modal, Table } from 'react-bootstrap';
-import { FaInbox, FaPen, FaPlus, FaSearch, FaUsers } from 'react-icons/fa';
+import { FaBuilding, FaInbox, FaPen, FaPlus, FaSearch } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import * as Yup from 'yup';
 
 import Pagination from '../../../components/ui/Pagination';
 import TableAction from '../../../components/ui/TableAction';
 import TextField from '../../../components/ui/TextField';
-import { AUTHOR } from '../../../constants/label';
+import { PUBLISHER } from '../../../constants/label';
 import { PAGINATION } from '../../../constants/setting';
 import { setLoading } from '../../../redux/slice/app.slice';
 import { showConfirmDialog } from '../../../redux/slice/confirmDialog.slice';
-import authorService from '../../../services/author.service';
+import publisherService from '../../../services/publisher.service';
 import dateUtil from '../../../utils/date.util';
 import messageUtil from '../../../utils/message.util';
 import validationUtil from '../../../utils/validation.util';
 import '../management-common.scss';
 
-function AuthorManagementPage() {
+function PublisherManagementPage() {
   const isLoading = useSelector((state) => state.app.isLoading);
   const [searchCondition, setSearchCondition] = useState(null);
   const [data, setData] = useState([]);
@@ -34,16 +34,16 @@ function AuthorManagementPage() {
   }, [totalItems]);
 
   const fetchData = useCallback(
-    async (pageNum) => {
+    async (page) => {
       try {
         dispatch(setLoading(true));
-        const { data, totalItems } = await authorService.search({
-          pageNum,
+        const res = await publisherService.search({
+          pageNum: page,
           pageSize: PAGINATION.PAGE_SIZE,
           name: searchCondition?.name || null,
         });
-        setData(data);
-        setTotalItems(totalItems);
+        setData(res.data ?? []);
+        setTotalItems(res.totalItems ?? 0);
       } catch {
         // Error page shown by httpClient interceptor for 401/403/500
       } finally {
@@ -61,30 +61,19 @@ function AuthorManagementPage() {
     setPageNum(page);
   }, []);
 
-  const onClickEditBtn = async (id) => {
-    dispatch(setLoading(true));
-    try {
-      const { data } = await authorService.findById(id);
-      if (!data) {
-        return;
-      }
-      editFormik.setValues({
-        id,
-        name: data.name,
-      });
-      setShowEditModal(true);
-    } catch {
-      // Error page or toast shown by httpClient
-    } finally {
-      dispatch(setLoading(false));
-    }
+  const onClickEditBtn = (item) => {
+    editFormik.setValues({
+      id: item.id,
+      name: item.name,
+    });
+    setShowEditModal(true);
   };
 
   const onClickDeleteBtn = (item) => {
     dispatch(
       showConfirmDialog({
         message: messageUtil.getDeleteConfirmationMsg(
-          `xoá <strong>Tác giả ${item.name}</strong>`,
+          `xoá <strong>Nhà xuất bản ${item.name}</strong>`,
         ),
         okFunc: () => deleteRecord(item.id),
       }),
@@ -94,7 +83,7 @@ function AuthorManagementPage() {
   const deleteRecord = async (id) => {
     try {
       dispatch(setLoading(true));
-      await authorService.delete(id);
+      await publisherService.delete(id);
       messageUtil.showSuccessMessage();
       fetchData(1);
     } catch {
@@ -111,14 +100,14 @@ function AuthorManagementPage() {
     validateOnBlur: true,
     validationSchema: Yup.object({
       name: Yup.string()
-        .required(validationUtil.requiredMsg(AUTHOR.NAME))
-        .max(255, validationUtil.maxLength(AUTHOR.NAME, 255)),
+        .required(validationUtil.requiredMsg(PUBLISHER.NAME))
+        .max(255, validationUtil.maxLength(PUBLISHER.NAME, 255)),
     }),
     onSubmit: async () => {
       const { name } = createFormik.values;
       try {
         dispatch(setLoading(true));
-        await authorService.create({ name });
+        await publisherService.create({ name });
         messageUtil.showSuccessMessage();
         createFormik.resetForm();
         setShowAddModal(false);
@@ -138,14 +127,14 @@ function AuthorManagementPage() {
     validateOnBlur: true,
     validationSchema: Yup.object({
       name: Yup.string()
-        .required(validationUtil.requiredMsg(AUTHOR.NAME))
-        .max(255, validationUtil.maxLength(AUTHOR.NAME, 255)),
+        .required(validationUtil.requiredMsg(PUBLISHER.NAME))
+        .max(255, validationUtil.maxLength(PUBLISHER.NAME, 255)),
     }),
     onSubmit: async () => {
       const { id, name } = editFormik.values;
       try {
         dispatch(setLoading(true));
-        await authorService.update(id, { name });
+        await publisherService.update(id, { name });
         messageUtil.showSuccessMessage();
         setShowEditModal(false);
         fetchData(1);
@@ -164,8 +153,8 @@ function AuthorManagementPage() {
     validateOnBlur: true,
     validationSchema: Yup.object({
       name: Yup.string()
-        .required(validationUtil.requiredMsg(AUTHOR.NAME))
-        .max(255, validationUtil.maxLength(AUTHOR.NAME, 255)),
+        .required(validationUtil.requiredMsg(PUBLISHER.NAME))
+        .max(255, validationUtil.maxLength(PUBLISHER.NAME, 255)),
     }),
   });
 
@@ -194,7 +183,7 @@ function AuthorManagementPage() {
   };
 
   return (
-    <div className="management-page author-management">
+    <div className="management-page publisher-management">
       {/* Edit Modal */}
       <Modal centered show={showEditModal} onHide={handleCloseEditModal}>
         <Modal.Header closeButton className="border-0 pb-0">
@@ -202,12 +191,12 @@ function AuthorManagementPage() {
             <span className="modal-icon bg-primary rounded-2 d-flex align-items-center justify-content-center text-white">
               <FaPen />
             </span>
-            Chỉnh sửa Tác giả
+            Chỉnh sửa Nhà xuất bản
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="pt-3">
           <TextField
-            label={AUTHOR.NAME}
+            label={PUBLISHER.NAME}
             name="name"
             maxLength={255}
             value={editFormik.values.name}
@@ -238,12 +227,12 @@ function AuthorManagementPage() {
             <span className="modal-icon bg-success rounded-2 d-flex align-items-center justify-content-center text-white">
               <FaPlus />
             </span>
-            Thêm Tác giả mới
+            Thêm Nhà xuất bản mới
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="pt-3">
           <TextField
-            label={AUTHOR.NAME}
+            label={PUBLISHER.NAME}
             name="name"
             maxLength={255}
             value={createFormik.values.name}
@@ -271,9 +260,9 @@ function AuthorManagementPage() {
       <div className="d-flex align-items-center justify-content-between mb-4">
         <div className="d-flex align-items-center gap-3">
           <div className="page-icon rounded-3 d-flex align-items-center justify-content-center text-white">
-            <FaUsers />
+            <FaBuilding />
           </div>
-          <h4 className="mb-0 fw-bold">Quản lý Tác giả</h4>
+          <h4 className="mb-0 fw-bold">Quản lý Nhà xuất bản</h4>
         </div>
         <Button
           className="btn-orange px-4"
@@ -295,7 +284,7 @@ function AuthorManagementPage() {
                 value={searchFormik.values.name}
                 handleChange={searchFormik.handleChange}
                 handleBlur={searchFormik.handleBlur}
-                placeholder="Tìm kiếm tác giả..."
+                placeholder="Tìm kiếm nhà xuất bản..."
               />
             </div>
             <Button
@@ -319,13 +308,13 @@ function AuthorManagementPage() {
 
       {/* Data Table */}
       <Card className="shadow-sm border-0">
-        {data && data.length > 0 ? (
+        {data.length > 0 ? (
           <>
             <Table className="mb-0">
               <thead>
                 <tr>
                   <th className="stt text-center">STT</th>
-                  <th>Tên tác giả</th>
+                  <th>Tên nhà xuất bản</th>
                   <th>Ngày tạo</th>
                   <th>Cập nhật</th>
                   <th
@@ -355,7 +344,7 @@ function AuthorManagementPage() {
                       )}
                     </td>
                     <TableAction
-                      onEdit={() => onClickEditBtn(item.id)}
+                      onEdit={() => onClickEditBtn(item)}
                       onDelete={() => onClickDeleteBtn(item)}
                     />
                   </tr>
@@ -381,7 +370,7 @@ function AuthorManagementPage() {
         ) : !isLoading ? (
           <div className="empty-state text-center text-muted py-5">
             <FaInbox className="mb-3" />
-            <p className="mb-0">Chưa có tác giả nào</p>
+            <p className="mb-0">Chưa có nhà xuất bản nào</p>
           </div>
         ) : null}
       </Card>
@@ -389,4 +378,4 @@ function AuthorManagementPage() {
   );
 }
 
-export default AuthorManagementPage;
+export default PublisherManagementPage;

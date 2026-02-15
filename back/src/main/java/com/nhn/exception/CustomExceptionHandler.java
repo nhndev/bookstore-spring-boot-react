@@ -127,7 +127,7 @@ public class CustomExceptionHandler {
                                                                 final WebRequest webRequest) {
         log.error("handleAllException: ", ex);
         final ResponseEntity<BaseErrorResponse> res = ResponseEntity.internalServerError()
-                                                                    .body(ErrorMsgUtil.createInternalServerErrorResponse(ex));
+                                                                    .body(ErrorMsgUtil.createInternalServerErrorResponse());
         log.warn("←Response (API InternalServerError)：{}", res);
         return res;
     }

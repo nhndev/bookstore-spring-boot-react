@@ -1,28 +1,29 @@
 import React, { useEffect } from 'react';
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-
-import DefaultLayout from './layouts/DefaultLayout';
-import AdminLayout from './layouts/AdminLayout';
-
-import HomePage from './pages/HomePage';
-import LoginPage from './pages/Auth/LoginPage';
-
-import BookListPage from './pages/management/book/BookListPage';
-import CategoryManagementPage from './pages/management/category/CategoryManagementPage';
 
 import { useDispatch, useSelector } from 'react-redux';
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+
+import ConfirmDialog from './components/ui/ConfirmDialog';
+import Loading from './components/ui/Loading';
+import AdminLayout from './layouts/AdminLayout';
+import DefaultLayout from './layouts/DefaultLayout';
+import LoginPage from './pages/Auth/LoginPage';
+import ErrorPage from './pages/ErrorPage';
+import HomePage from './pages/HomePage';
+import AuthorManagementPage from './pages/management/author/AuthorManagementPage';
+import BookListPage from './pages/management/book/BookListPage';
+import CategoryManagementPage from './pages/management/category/CategoryManagementPage';
+import PublisherManagementPage from './pages/management/publisher/PublisherManagementPage';
 import { setUser } from './redux/slice/auth.slice';
 import userService from './services/user.service';
-import Loading from './components/ui/Loading';
-import ConfirmDialog from './components/ui/ConfirmDialog';
-import AuthorManagementPage from './pages/management/author/AuthorManagementPage';
 
 function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
   const currentUser = useSelector((state) => state.auth);
+  const errorPage = useSelector((state) => state.app.errorPage);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -47,7 +48,7 @@ function App() {
             role,
             avatarUrl,
             permissions,
-          })
+          }),
         );
       } catch (error) {
         console.log(error);
@@ -64,6 +65,15 @@ function App() {
     }
   }, [dispatch, currentUser, navigate, location.pathname]);
 
+  if (errorPage.show) {
+    return (
+      <>
+        <ToastContainer />
+        <ErrorPage />
+      </>
+    );
+  }
+
   return (
     <div className="App">
       <ToastContainer />
@@ -79,6 +89,7 @@ function App() {
           <Route path="book" element={<BookListPage />} />
           <Route path="category" element={<CategoryManagementPage />} />
           <Route path="author" element={<AuthorManagementPage />} />
+          <Route path="publisher" element={<PublisherManagementPage />} />
         </Route>
       </Routes>
     </div>

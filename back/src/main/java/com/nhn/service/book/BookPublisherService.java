@@ -9,10 +9,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.nhn.exception.FuncErrorException;
+import com.nhn.mapper.BookPublisherMapper;
 import com.nhn.mapstruct.BookMapping;
 import com.nhn.model.dto.request.book.publisher.BookPublisherCreateRequest;
+import com.nhn.model.dto.request.book.publisher.BookPublisherSearchRequest;
 import com.nhn.model.dto.request.book.publisher.BookPublisherUpdateRequest;
 import com.nhn.model.dto.response.BaseResponse;
+import com.nhn.model.dto.response.PaginationResponse;
 import com.nhn.model.dto.response.book.publisher.BookPublisherInfo;
 import com.nhn.model.entity.book.BookPublisher;
 import com.nhn.repository.book.BookPublisherRepository;
@@ -27,14 +30,15 @@ import lombok.RequiredArgsConstructor;
 public class BookPublisherService {
     private final BookPublisherRepository publisherRepository;
 
+    private final BookPublisherMapper bookPublisherMapper;
+
     private final BookMapping bookMapping;
 
-    public BaseResponse findAll() {
-        final List<BookPublisher>     list   = this.publisherRepository.findAll();
-        final List<BookPublisherInfo> result = list.stream()
-                                                   .map(this::buildBookPublisherInfo)
-                                                   .toList();
-        return BaseResponse.builder().data(result).build();
+    public PaginationResponse<BookPublisher> search(final BookPublisherSearchRequest request) {
+        final List<BookPublisher> list       = this.bookPublisherMapper.search(request);
+        final Integer             totalItems = this.bookPublisherMapper.count(request);
+        return PaginationResponse.<BookPublisher>builder().data(list)
+                                 .totalItems(totalItems).build();
     }
 
     @Transactional
@@ -54,6 +58,11 @@ public class BookPublisherService {
         final BookPublisher entity    = this.publisherRepository.save(publisher);
         return BaseResponse.builder().data(this.buildBookPublisherInfo(entity))
                            .build();
+    }
+
+    @Transactional
+    public void delete(final UUID id) {
+        this.publisherRepository.deleteById(id);
     }
 
     private BookPublisher buildBookPublisher(final UUID id, final String name) {

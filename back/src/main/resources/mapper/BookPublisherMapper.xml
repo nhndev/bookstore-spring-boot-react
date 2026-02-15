@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nhn.mapper.BookPublisherMapper">
+    <select id="search" resultType="com.nhn.model.entity.book.BookPublisher">
+        SELECT
+            id, name, slug, created_at, updated_at
+        FROM
+            bs_publishers
+        <where>
+            <include refid="searchConditionSql"/>
+        </where>
+        ORDER BY created_at DESC
+        LIMIT #{ pageSize }
+        OFFSET (#{ pageNum } - 1) * #{ pageSize }
+    </select>
+
+    <select id="count" resultType="java.lang.Integer">
+        SELECT
+            COUNT(*)
+        FROM
+            bs_publishers
+        <where>
+            <include refid="searchConditionSql"/>
+        </where>
+    </select>
+
+    <sql id="searchConditionSql">
+        <if test="name != null and name !=''">
+            AND UNACCENT(LOWER(name)) LIKE CONCAT('%', UNACCENT(LOWER(#{name})), '%')
+        </if>
+    </sql>
+</mapper>

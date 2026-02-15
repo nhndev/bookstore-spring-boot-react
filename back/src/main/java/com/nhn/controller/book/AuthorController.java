@@ -35,14 +35,14 @@ public class AuthorController {
     }
 
     @PostMapping
-    @SysAuthorize(role = SysRole.SUPER_ADMIN, permissions = {"AUTHOR_CREATE"})
+    @SysAuthorize(role = SysRole.SUPER_ADMIN, permissions = {"BOOK_AUTHOR_CREATE"})
     public ResponseEntity<BaseResponse> create(@Valid @RequestBody final AuthorCreateRequest request) {
         return ResponseEntity.ok()
                              .body(this.authorService.createAuthor(request));
     }
 
     @PutMapping("/{id}")
-    @SysAuthorize(role = SysRole.SUPER_ADMIN, permissions = {"AUTHOR_EDIT"})
+    @SysAuthorize(role = SysRole.SUPER_ADMIN, permissions = {"BOOK_AUTHOR_EDIT"})
     public ResponseEntity<BaseResponse> update(@PathVariable final UUID id,
                                                @Valid @RequestBody final AuthorUpdateRequest request) {
         return ResponseEntity.ok()
@@ -50,7 +50,7 @@ public class AuthorController {
     }
 
     @DeleteMapping("/{id}")
-    @SysAuthorize(role = SysRole.SUPER_ADMIN, permissions = {"AUTHOR_DELETE"})
+    @SysAuthorize(role = SysRole.SUPER_ADMIN, permissions = {"BOOK_AUTHOR_DELETE"})
     public ResponseEntity<?> delete(@PathVariable final UUID id) {
         this.authorService.delete(id);
         return ResponseEntity.ok().body(AppMsg.FUNC_SUCCESS_MSG);

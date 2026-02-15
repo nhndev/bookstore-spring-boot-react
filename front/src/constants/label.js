@@ -7,3 +7,7 @@ export const CATEGORY = {
 export const AUTHOR = {
   NAME: 'Tên tác giả'
 }
+
+export const PUBLISHER = {
+  NAME: 'Tên nhà xuất bản'
+}

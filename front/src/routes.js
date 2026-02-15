@@ -25,6 +25,11 @@ export const routes = [
         name: 'AuthorManagement',
         path: '/management/author',
        },
+       {
+        title: 'Nhà xuất bản',
+        name: 'PublisherManagement',
+        path: '/management/publisher',
+       },
     ],
   },
   {

@@ -6,10 +6,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.nhn.annotation.SysAuthorize;
+import com.nhn.constant.AppMsg;
 import com.nhn.constant.SysRole;
 import com.nhn.model.dto.request.book.publisher.BookPublisherCreateRequest;
+import com.nhn.model.dto.request.book.publisher.BookPublisherSearchRequest;
 import com.nhn.model.dto.request.book.publisher.BookPublisherUpdateRequest;
 import com.nhn.model.dto.response.BaseResponse;
+import com.nhn.model.dto.response.PaginationResponse;
 import com.nhn.service.book.BookPublisherService;
 
 import jakarta.validation.Valid;
@@ -22,8 +25,9 @@ public class BookPublisherController {
     private final BookPublisherService bookPublisherService;
 
     @GetMapping
-    public ResponseEntity<?> getAll() {
-        return ResponseEntity.ok().body(this.bookPublisherService.findAll());
+    public ResponseEntity<PaginationResponse<?>> search(@Valid final BookPublisherSearchRequest request) {
+        return ResponseEntity.ok()
+                             .body(this.bookPublisherService.search(request));
     }
 
     @PostMapping
@@ -40,5 +44,12 @@ public class BookPublisherController {
         return ResponseEntity.ok()
                              .body(this.bookPublisherService.updateById(id,
                                                                         request));
+    }
+
+    @DeleteMapping("/{id}")
+    @SysAuthorize(role = SysRole.SUPER_ADMIN, permissions = {"BOOK_PUBLISHER_DELETE"})
+    public ResponseEntity<?> delete(@PathVariable final UUID id) {
+        this.bookPublisherService.delete(id);
+        return ResponseEntity.ok().body(AppMsg.FUNC_SUCCESS_MSG);
     }
 }
