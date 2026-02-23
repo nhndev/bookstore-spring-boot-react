@@ -18,6 +18,5 @@ public class RoleUpdatePermissionRequest {
     @Required(message = "roleId is required")
     private UUID roleId;
 
-    @Required(message = "permissionIds is required")
     private List<UUID> permissionIds;
 }

@@ -91,7 +91,13 @@ public class RoleService {
 
         // validate permission ids
         final List<UUID> permissionsRequest = request.getPermissionIds();
-        final List<UUID> newPermissionIds   = this.permissionRepository.findPermissionIdsIn(permissionsRequest);
+        if (CollectionUtils.isEmpty(permissionsRequest)) {
+            log.debug("[Update permission] roleId: {}, empty permissions, delete all permissions",
+                      roleId);
+            this.rolePermissionRepository.deleteByRoleId(roleId);
+            return BaseResponse.builder().data(AppMsg.FUNC_SUCCESS_MSG).build();
+        }
+        final List<UUID> newPermissionIds = this.permissionRepository.findPermissionIdsIn(permissionsRequest);
         if (!ArrayUtils.isSameLength(permissionsRequest.toArray(),
                                      newPermissionIds.toArray())) {
             log.error("[Update permission] invalid permissions: {}",
@@ -100,8 +106,8 @@ public class RoleService {
         }
 
         final List<UUID> oldPermissionIds = this.roleRepository.findPermissionIdsByRoleId(roleId);
-        log.info("[Update permission] roleId: {}, oldPermissionIds: {}, newPermissionIds: {}",
-                 roleId, oldPermissionIds, newPermissionIds);
+        log.debug("[Update permission] roleId: {}, oldPermissionIds: {}, newPermissionIds: {}",
+                  roleId, oldPermissionIds, newPermissionIds);
 
         final List<UUID> deletePermissionIds = oldPermissionIds.stream()
                                                                .filter(permissionId -> !newPermissionIds.contains(permissionId))
@@ -109,8 +115,8 @@ public class RoleService {
         final List<UUID> addPermissionIds    = newPermissionIds.stream()
                                                                .filter(permissionId -> !oldPermissionIds.contains(permissionId))
                                                                .toList();
-        log.info("[Update permission] roleId: {}, deletePermissionIds: {}, addPermissionIds: {}",
-                 roleId, deletePermissionIds, addPermissionIds);
+        log.debug("[Update permission] roleId: {}, deletePermissionIds: {}, addPermissionIds: {}",
+                  roleId, deletePermissionIds, addPermissionIds);
 
         boolean isUpdate = false;
         // delete old permissions
@@ -132,7 +138,7 @@ public class RoleService {
             isUpdate = true;
         }
 
-        if (!isUpdate) {
+        if (isUpdate) {
             this.redisCache.deleteObject(AuthUtil.getUserPermissionRedisKey(roleId));
         }
 
@@ -142,6 +148,6 @@ public class RoleService {
 
     private RoleInfo buildRoleInfo(final Role entity) {
         return RoleInfo.builder().id(entity.getId()).name(entity.getName())
-                       .build();
+                       .roleNo(entity.getRoleNo()).build();
     }
 }
