@@ -12,7 +12,7 @@ import LoginPage from './pages/Auth/LoginPage';
 import ErrorPage from './pages/ErrorPage';
 import HomePage from './pages/HomePage';
 import AuthorManagementPage from './pages/management/author/AuthorManagementPage';
-import BookListPage from './pages/management/book/BookListPage';
+import BookManagementPage from './pages/management/book/BookManagementPage';
 import CategoryManagementPage from './pages/management/category/CategoryManagementPage';
 import PublisherManagementPage from './pages/management/publisher/PublisherManagementPage';
 import { setUser } from './redux/slice/auth.slice';
@@ -86,7 +86,7 @@ function App() {
         </Route>
 
         <Route path="/management" element={<AdminLayout />}>
-          <Route path="book" element={<BookListPage />} />
+          <Route path="book" element={<BookManagementPage />} />
           <Route path="category" element={<CategoryManagementPage />} />
           <Route path="author" element={<AuthorManagementPage />} />
           <Route path="publisher" element={<PublisherManagementPage />} />

@@ -63,6 +63,15 @@ public class BookCategoryService {
                            .build();
     }
 
+    public BaseResponse<List<BookCategoryBasicInfo>> findAllChildCategories() {
+        final List<BookCategory>          list   = this.categoryRepository.findByParentIsNotNull();
+        final List<BookCategoryBasicInfo> result = list.stream()
+                                                       .map(this::buildBookCategoryBasicInfo)
+                                                       .toList();
+        return BaseResponse.<List<BookCategoryBasicInfo>>builder().data(result)
+                           .build();
+    }
+
     public BaseResponse<BookCategoryInfo> findById(final UUID id) {
         final BookCategory entity = this.categoryRepository.findById(id)
                                                            .orElseThrow(() -> new FuncErrorException(ErrorMsgUtil.createBookCategoryNotFoundErrorResponse()));

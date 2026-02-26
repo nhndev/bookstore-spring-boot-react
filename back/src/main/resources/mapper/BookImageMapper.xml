@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nhn.mapper.BookImageMapper">
+    <select id="getAllByBookId" resultType="com.nhn.model.entity.book.BookImage">
+        SELECT
+            id, url, public_id
+        FROM
+            bs_book_image
+        WHERE
+             book_id = #{bookId}
+    </select>
+
+    <select id="getFirstByBookId" resultType="com.nhn.model.entity.book.BookImage">
+        SELECT
+            id, url, public_id
+        FROM
+            bs_book_image
+        WHERE
+            book_id = #{bookId}
+        LIMIT 1
+    </select>
+</mapper>

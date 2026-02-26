@@ -12,6 +12,7 @@ Select.propTypes = {
   handleBlur: PropTypes.func.isRequired,
   error: PropTypes.string,
   touched: PropTypes.bool,
+  required: PropTypes.bool,
   options: PropTypes.array.isRequired,
 };
 function Select({
@@ -22,13 +23,19 @@ function Select({
   handleChange,
   handleBlur,
   error,
+  touched,
+  required,
   options,
 }) {
+  const showError = error && touched;
   return (
     <div className={`form-group ${className}`}>
-      <label>{label}</label>
+      <label>
+        {label}
+        {required && <span className="text-danger ms-1">*</span>}
+      </label>
       <select
-        className="form-select"
+        className={`form-select ${showError ? 'is-invalid' : ''}`}
         name={name}
         value={value}
         onChange={handleChange}
@@ -42,7 +49,7 @@ function Select({
             </option>
           ))}
       </select>
-      {error && (
+      {showError && (
         <Feedback type="invalid" className="feedback">
           {error}
         </Feedback>

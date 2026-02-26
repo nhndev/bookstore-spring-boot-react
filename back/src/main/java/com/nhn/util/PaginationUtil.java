@@ -21,6 +21,9 @@ public class PaginationUtil {
     /** Table name: bs_authors. */
     public static final String TABLE_BS_AUTHORS = "bs_authors";
 
+    /** Table name: bs_books. */
+    public static final String TABLE_BS_BOOKS = "bs_books";
+
     public static final String CREATED_AT = "created_at";
 
     private static final Map<String, Set<String>> ALLOWED_SORT_COLUMNS = Map.of(TABLE_BS_PUBLISHERS,
@@ -33,6 +36,14 @@ public class PaginationUtil {
                                                                                 Set.of("id",
                                                                                        "name",
                                                                                        "slug",
+                                                                                       "created_at",
+                                                                                       "updated_at"),
+                                                                                TABLE_BS_BOOKS,
+                                                                                Set.of("id",
+                                                                                       "name",
+                                                                                       "slug",
+                                                                                       "price",
+                                                                                       "quantity",
                                                                                        "created_at",
                                                                                        "updated_at"));
 

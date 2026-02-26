@@ -12,8 +12,10 @@ import org.springframework.web.multipart.MultipartFile;
 import com.nhn.annotation.SysAuthorize;
 import com.nhn.constant.SysRole;
 import com.nhn.model.dto.request.book.BookCreateRequest;
+import com.nhn.model.dto.request.book.BookSearchRequest;
 import com.nhn.model.dto.request.book.BookUpdateRequest;
 import com.nhn.model.dto.response.BaseResponse;
+import com.nhn.model.dto.response.PaginationResponse;
 import com.nhn.service.book.BookImageService;
 import com.nhn.service.book.BookService;
 
@@ -83,31 +85,26 @@ public class BookController {
     //        return ResponseEntity.ok().body(this.productService.searchProduct(keyword, pageable));
     //    }
 
-    //    @GetMapping("/{id}")
-    //    @Operation(summary = "Find a product")
-    //    @ApiResponses(value = {
-    //            @ApiResponse(responseCode = "200", description = "Find a product successfully", content = @Content(mediaType = "application/json",
-    //                    schema = @Schema(implementation = BaseResponse.class))),
-    //
-    //    })
-    //    public ResponseEntity<?> findById(@PathVariable final UUID id) throws NotFoundException {
-    //
-    //        return ResponseEntity.ok().body(this.productService.findById(id));
-    //    }
-
-    @PostMapping()
-    @SysAuthorize(role = SysRole.SUPER_ADMIN, permissions = {"BOOK_CREATE"})
-    public ResponseEntity<?> create(@Valid @RequestBody final BookCreateRequest request) {
-        return ResponseEntity.ok()
-                             .body(this.bookService.createBook(request));
+    @GetMapping
+    public ResponseEntity<PaginationResponse<?>> search(@Valid final BookSearchRequest request) {
+        return ResponseEntity.ok().body(this.bookService.search(request));
     }
 
-    @PutMapping("/{id}")
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @SysAuthorize(role = SysRole.SUPER_ADMIN, permissions = {"BOOK_CREATE"})
+    public ResponseEntity<BaseResponse> create(@Valid @RequestPart("book") final BookCreateRequest request,
+                                               @RequestPart(value = "files", required = false) final List<MultipartFile> files) {
+        return ResponseEntity.ok()
+                             .body(this.bookService.createBook(request, files));
+    }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @SysAuthorize(role = SysRole.SUPER_ADMIN, permissions = {"BOOK_EDIT"})
     public ResponseEntity<?> updateById(@PathVariable final UUID id,
-                                        @Valid @RequestBody final BookUpdateRequest request) {
-        return ResponseEntity.ok()
-                             .body(this.bookService.updateById(id, request));
+                                        @Valid @RequestPart("book") final BookUpdateRequest request,
+                                        @RequestPart(value = "files", required = false) final List<MultipartFile> files) {
+        return ResponseEntity.ok().body(this.bookService.updateById(id, request,
+                                                                    files));
     }
 
     @PostMapping(value = "/image/{bookId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})

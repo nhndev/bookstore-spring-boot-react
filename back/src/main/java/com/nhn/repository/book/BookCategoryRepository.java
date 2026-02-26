@@ -1,5 +1,6 @@
 package com.nhn.repository.book;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,4 +12,6 @@ import com.nhn.model.entity.book.BookCategory;
 @Repository
 public interface BookCategoryRepository extends JpaRepository<BookCategory, UUID> {
     Optional<BookCategory> findBySlug(String slug);
+
+    List<BookCategory> findByParentIsNotNull();
 }

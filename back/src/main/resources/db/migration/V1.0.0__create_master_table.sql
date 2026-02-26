@@ -123,7 +123,7 @@ CREATE TABLE public.bs_books (
     "layout" varchar(255),
     "name" varchar(255) NOT NULL,
     "page_count" int4,
-    "price" int8 NOT NULL,
+    "price" numeric(12,0) NOT NULL,
     "publish_year" int4,
     "quantity" int4 NOT NULL DEFAULT 0,
     "size" varchar(255),

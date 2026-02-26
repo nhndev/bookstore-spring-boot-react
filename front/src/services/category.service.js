@@ -15,6 +15,10 @@ const categoryService = {
     const url = CATEGORY_API;
     return httpClent.get(url);
   },
+  findAllChildCategories: () => {
+    const url = `${CATEGORY_API}/children`;
+    return httpClent.get(url);
+  },
   create: (data, config) => {
     const url = CATEGORY_API;
     return httpClent.post(url, data, config);

@@ -11,3 +11,14 @@ export const AUTHOR = {
 export const PUBLISHER = {
   NAME: 'Tên nhà xuất bản'
 }
+
+export const BOOK = {
+  NAME: 'Tên sách',
+  PRICE: 'Giá',
+  DISCOUNT: 'Giảm giá',
+  QUANTITY: 'Số lượng',
+  LAYOUT: 'Hình thức',
+  PAGE_COUNT: 'Số trang',
+  SIZE: 'Kích thước',
+  WEIGHT: 'Khối lượng (g)',
+}

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nhn.mapper.BookMapper">
+    <select id="search" resultType="com.nhn.model.dto.response.book.BookSearchResult">
+        SELECT
+            b.id,
+            b.name,
+            b.slug,
+            b.price,
+            b.discount,
+            b.quantity,
+            b.image_url,
+            b.created_at,
+            b.updated_at,
+            c.name AS category_name,
+            p.name AS publisher_name,
+            (SELECT
+                string_agg(a.name, ', ' ORDER BY ab.is_main DESC NULLS LAST, a.name)
+             FROM
+                bs_author_book ab
+                JOIN bs_authors a ON ab.author_id = a.id
+             WHERE
+                ab.book_id = b.id)
+            AS author_names
+        FROM
+            bs_books b
+            LEFT JOIN bs_categories c ON b.category_id = c.id
+            LEFT JOIN bs_publishers p ON b.publisher_id = p.id
+        <where>
+            <include refid="searchConditionSql"/>
+        </where>
+        ORDER BY
+        <choose>
+            <when test="sortBy != null and sortBy != ''">b.${sortBy} ${sortOrder}</when>
+            <otherwise>b.created_at DESC</otherwise>
+        </choose>
+        LIMIT #{ pageSize }
+        OFFSET (#{ pageNum } - 1) * #{ pageSize }
+    </select>
+
+    <select id="count" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM bs_books b
+        <where>
+            <include refid="searchConditionSql"/>
+        </where>
+    </select>
+
+    <sql id="searchConditionSql">
+        <if test="name != null and name != ''">
+            AND UNACCENT(LOWER(b.name)) LIKE CONCAT('%', UNACCENT(LOWER(#{name})), '%')
+        </if>
+        <if test="categoryId != null">
+            AND b.category_id = #{categoryId}
+        </if>
+        <if test="publisherId != null">
+            AND b.publisher_id = #{publisherId}
+        </if>
+    </sql>
+</mapper>

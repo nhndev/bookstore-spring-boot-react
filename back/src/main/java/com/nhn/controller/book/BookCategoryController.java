@@ -35,6 +35,12 @@ public class BookCategoryController {
         return ResponseEntity.ok().body(this.bookCategoryService.findAll());
     }
 
+    @GetMapping("/children")
+    public ResponseEntity<?> getChildCategories() {
+        return ResponseEntity.ok()
+                             .body(this.bookCategoryService.findAllChildCategories());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable final UUID id) {
         return ResponseEntity.ok().body(this.bookCategoryService.findById(id));

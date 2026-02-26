@@ -2,7 +2,7 @@ import React from 'react';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import PropTypes from 'prop-types';
 
-function SortableTh({ label, sortKey, sortBy, sortOrder, onSort }) {
+function SortableTh({ label, sortKey, sortBy = null, sortOrder = 'asc', onSort }) {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -39,11 +39,6 @@ SortableTh.propTypes = {
   sortBy: PropTypes.string,
   sortOrder: PropTypes.oneOf(['asc', 'desc']),
   onSort: PropTypes.func.isRequired,
-};
-
-SortableTh.defaultProps = {
-  sortBy: null,
-  sortOrder: 'asc',
 };
 
 export default SortableTh;

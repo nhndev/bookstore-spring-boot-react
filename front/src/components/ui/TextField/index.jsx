@@ -13,6 +13,7 @@ TextField.propTypes = {
   handleBlur: PropTypes.func.isRequired,
   error: PropTypes.string,
   touched: PropTypes.bool,
+  required: PropTypes.bool,
 };
 
 function TextField({
@@ -25,22 +26,29 @@ function TextField({
   handleChange,
   handleBlur,
   error,
-  touched
+  touched,
+  required,
 }) {
+  const showError = error && touched;
   return (
     <div className={`form-group ${className || ''}`}>
-      {label && (<label>{label}</label>)}
+      {label && (
+        <label>
+          {label}
+          {required && <span className="text-danger ms-1">*</span>}
+        </label>
+      )}
       <input
         type="text"
         placeholder={placeholder}
         name={name}
         maxLength={maxLength}
-        className={`form-control ${error && touched ? 'is-invalid' : ''}`}
+        className={`form-control ${showError ? 'is-invalid' : ''}`}
         value={value}
         onChange={handleChange}
         onBlur={handleBlur}
       />
-      {error && (
+      {showError && (
         <Feedback type="invalid" className="feedback">
           {error}
         </Feedback>

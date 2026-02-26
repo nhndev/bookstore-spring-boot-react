@@ -5,20 +5,27 @@ import java.util.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.nhn.exception.FuncErrorException;
+import com.nhn.mapper.BookMapper;
 import com.nhn.mapstruct.BookMapping;
 import com.nhn.model.dto.request.book.BookCreateRequest;
+import com.nhn.model.dto.request.book.BookSearchRequest;
 import com.nhn.model.dto.request.book.BookUpdateRequest;
 import com.nhn.model.dto.response.BaseResponse;
+import com.nhn.model.dto.response.PaginationResponse;
+import com.nhn.model.dto.response.book.BookSearchResult;
 import com.nhn.model.entity.book.Book;
 import com.nhn.model.entity.book.BookAuthor;
 import com.nhn.model.entity.book.BookCategory;
 import com.nhn.model.entity.book.BookPublisher;
 import com.nhn.repository.book.*;
 import com.nhn.util.ErrorMsgUtil;
+import com.nhn.util.PaginationUtil;
 import com.nhn.util.StringUtil;
 import com.nhn.util.UuidUtil;
 
@@ -39,15 +46,33 @@ public class BookService {
 
     private final BookAuthorRepository bookAuthorRepository;
 
+    private final BookImageService bookImageService;
+
+    private final BookMapper bookMapper;
+
     private final BookMapping bookMapping;
 
+    public PaginationResponse<BookSearchResult> search(final BookSearchRequest request) {
+        PaginationUtil.applySortParams(request, PaginationUtil.TABLE_BS_BOOKS,
+                                       PaginationUtil.CREATED_AT,
+                                       Sort.Direction.DESC.name());
+        final List<BookSearchResult> list       = this.bookMapper.search(request);
+        final Integer                totalItems = this.bookMapper.count(request);
+        return PaginationResponse.<BookSearchResult>builder().data(list)
+                                 .totalItems(totalItems).build();
+    }
+
     @Transactional
-    public BaseResponse createBook(final BookCreateRequest request) {
+    public BaseResponse createBook(final BookCreateRequest request,
+                                   final List<MultipartFile> files) {
         final Book                                      book                  = this.bookRepository.save(this.buildBookEntity(null,
                                                                                                                               request));
         final List<BookCreateRequest.BookAuthorRequest> bookAuthorRequestList = request.getAuthors();
         if (CollectionUtils.isNotEmpty(bookAuthorRequestList)) {
             this.saveAuthors(false, book.getId(), bookAuthorRequestList);
+        }
+        if (CollectionUtils.isNotEmpty(files)) {
+            this.bookImageService.uploadImages(book.getId(), files);
         }
         return BaseResponse.builder()
                            .data(this.bookMapping.toBookBasicInfo(book))
@@ -56,13 +81,16 @@ public class BookService {
 
     @Transactional
     public BaseResponse updateById(final UUID id,
-                                   final BookUpdateRequest request) {
+                                   final BookUpdateRequest request,
+                                   final List<MultipartFile> files) {
         final Book                                      book                  = this.bookRepository.save(this.buildBookEntity(id,
                                                                                                                               request));
         final List<BookCreateRequest.BookAuthorRequest> bookAuthorRequestList = request.getAuthors();
         if (CollectionUtils.isNotEmpty(bookAuthorRequestList)) {
             this.saveAuthors(true, book.getId(), bookAuthorRequestList);
         }
+        this.bookImageService.syncImages(book.getId(),
+                                         request.getKeepImageIds(), files);
         return BaseResponse.builder()
                            .data(this.bookMapping.toBookBasicInfo(book))
                            .build();
