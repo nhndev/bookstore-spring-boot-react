@@ -108,6 +108,7 @@ function MultiImageUpload({
   reorderHint,
   addButtonLabel = 'Thêm ảnh',
   validationError,
+  onAddButtonClick,
   className,
   inputRef: inputRefProp,
 }) {
@@ -197,8 +198,9 @@ function MultiImageUpload({
   const canAddMore = typeof maxCount === 'number' && files.length < maxCount;
 
   const triggerFileSelect = useCallback(() => {
+    onAddButtonClick?.();
     if (resolvedInputRef?.current) resolvedInputRef.current.click();
-  }, [resolvedInputRef]);
+  }, [resolvedInputRef, onAddButtonClick]);
 
   return (
     <div className={`multi-image-upload ${className || ''}`}>
@@ -283,12 +285,13 @@ MultiImageUpload.propTypes = {
   maxCount: PropTypes.number.isRequired,
   maxSizeBytes: PropTypes.number.isRequired,
   accept: PropTypes.string,
-  label: PropTypes.string,
+  label: PropTypes.node,
   firstImageLabel: PropTypes.string,
   hint: PropTypes.string,
   reorderHint: PropTypes.string,
   addButtonLabel: PropTypes.string,
   validationError: PropTypes.string,
+  onAddButtonClick: PropTypes.func,
   className: PropTypes.string,
   inputRef: PropTypes.object,
 };

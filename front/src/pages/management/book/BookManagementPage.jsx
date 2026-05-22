@@ -604,10 +604,18 @@ function BookManagementPage() {
                     onChange={(files) => {
                       createFormik.setFieldValue('imageFiles', files);
                       createFormik.setFieldTouched('imageFiles', true);
+                      if (files.length >= 1) {
+                        createFormik.setFieldError('imageFiles', undefined);
+                      }
+                    }}
+                    onAddButtonClick={() => {
+                      createFormik.setFieldTouched('imageFiles', true);
+                      createFormik.validateField('imageFiles');
                     }}
                     validationError={
                       (createFormik.touched.imageFiles ||
                         createFormik.submitCount > 0) &&
+                      (createFormik.values.imageFiles?.length ?? 0) < 1 &&
                       createFormik.errors.imageFiles
                         ? createFormik.errors.imageFiles
                         : null

@@ -2,9 +2,9 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Modal } from 'react-bootstrap';
 import { setShow } from '../../../redux/slice/confirmDialog.slice';
+import store from '../../../redux/store';
 import './ConfirmDialog.scss';
 
-// Question/Confirm icon
 const QuestionIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -19,11 +19,26 @@ const QuestionIcon = () => (
   </svg>
 );
 
+const ErrorIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+  >
+    <path
+      fillRule="evenodd"
+      d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
+
 function ConfirmDialog() {
   const dispatch = useDispatch();
-  const { isShow, message, okFunc, cancelFunc } = useSelector(
+  const { isShow, message, okFunc, cancelFunc, variant } = useSelector(
     (state) => state.confirmDialog,
   );
+  const isError = variant === 'error';
 
   const onClickCancel = () => {
     if (cancelFunc) {
@@ -33,9 +48,20 @@ function ConfirmDialog() {
   };
 
   const onClickOk = async () => {
-    if (okFunc) {
-      await okFunc();
+    try {
+      if (okFunc) {
+        await okFunc();
+      }
+    } catch {
+      // API failed; error dialog may have been shown by httpClient
     }
+    const { variant } = store.getState().confirmDialog;
+    if (variant !== 'error') {
+      dispatch(setShow(false));
+    }
+  };
+
+  const onClickCloseError = () => {
     dispatch(setShow(false));
   };
 
@@ -44,27 +70,37 @@ function ConfirmDialog() {
       centered
       show={isShow}
       onHide={onClickCancel}
-      className="confirm-dialog"
+      className={`confirm-dialog ${isError ? 'confirm-dialog--error' : ''}`}
       backdropClassName="confirm-dialog-backdrop"
     >
       <Modal.Header closeButton />
       <Modal.Body>
         <div className="confirm-icon">
-          <QuestionIcon />
+          {isError ? <ErrorIcon /> : <QuestionIcon />}
         </div>
-        <h4 className="confirm-title">Xác nhận thao tác</h4>
+        <h4 className="confirm-title">
+          {isError ? 'Lỗi' : 'Xác nhận thao tác'}
+        </h4>
         <div
           className="confirm-message"
           dangerouslySetInnerHTML={{ __html: message }}
         />
       </Modal.Body>
       <Modal.Footer>
-        <button className="btn-cancel" onClick={onClickCancel}>
-          Huỷ bỏ
-        </button>
-        <button className="btn-confirm" onClick={onClickOk}>
-          Xác nhận
-        </button>
+        {isError ? (
+          <button className="btn-confirm" onClick={onClickCloseError}>
+            Đóng
+          </button>
+        ) : (
+          <>
+            <button className="btn-cancel" onClick={onClickCancel}>
+              Huỷ bỏ
+            </button>
+            <button className="btn-confirm" onClick={onClickOk}>
+              Xác nhận
+            </button>
+          </>
+        )}
       </Modal.Footer>
     </Modal>
   );

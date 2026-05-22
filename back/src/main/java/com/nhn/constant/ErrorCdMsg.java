@@ -28,6 +28,7 @@ public class ErrorCdMsg {
     public static final String FUNC_BOOK_CATEGORY_NOT_FOUND_ERR_MSG     = "Danh mục sách không tồn tại trong hệ thống. Vui lòng kiểm tra lại!";
     public static final String FUNC_BOOK_CATEGORY_SLUG_EXISTS_ERR_MSG   = "Danh mục sách [{0}] đã tồn tại trong hệ thống. Vui lòng kiểm tra lại!";
     public static final String FUNC_BOOK_CATEGORY_INVALID_DEPTH_ERR_MSG = "Hệ thống chỉ hỗ trợ tối đa {0} cấp danh mục sách. Vui lòng kiểm tra lại!";
+    public static final String FUNC_BOOK_CATEGORY_CANNOT_DELETE_ERR_MSG = "Không thể xóa danh mục sách. Có sách đang sử dụng danh mục này hoặc danh mục con của nó. Vui lòng kiểm tra lại!";
 
     public static final String FUNC_BOOK_PUBLISHER_NOT_FOUND_ERR_MSG   = "NXB không tồn tại trong hệ thống. Vui lòng kiểm tra lại!";
     public static final String FUNC_BOOK_PUBLISHER_SLUG_EXISTS_ERR_MSG = "NXB [{0}] đã tồn tại trong hệ thống. Vui lòng kiểm tra lại!";

@@ -130,9 +130,13 @@ public class BookCategoryService {
 
     @Transactional
     public void delete(final UUID id) {
-        final BookCategory category = this.categoryRepository.findById(id)
-                                                             .orElseThrow(() -> new FuncErrorException(ErrorMsgUtil.createBookCategoryNotFoundErrorResponse()));
-        final String       imageUrl = category.getImageUrl();
+        final BookCategory category   = this.categoryRepository.findById(id)
+                                                               .orElseThrow(() -> new FuncErrorException(ErrorMsgUtil.createBookCategoryNotFoundErrorResponse()));
+        final int          booksCount = this.bookCategoryMapper.countBooksReferencingCategoryOrItsChildren(id);
+        if (booksCount > 0) {
+            throw new FuncErrorException(ErrorMsgUtil.createBookCategoryCannotDeleteErrorResponse());
+        }
+        final String imageUrl = category.getImageUrl();
         this.categoryRepository.deleteById(category.getId());
         this.deleteCloudinaryImage(imageUrl);
     }

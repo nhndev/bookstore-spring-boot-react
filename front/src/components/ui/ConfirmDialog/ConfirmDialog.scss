@@ -50,6 +50,14 @@
     }
   }
 
+  &.confirm-dialog--error .confirm-icon {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+
+    svg {
+      color: #d32f2f;
+    }
+  }
+
   // Title
   .confirm-title {
     font-size: 20px;

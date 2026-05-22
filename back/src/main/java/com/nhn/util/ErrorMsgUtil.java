@@ -154,6 +154,13 @@ public class ErrorMsgUtil {
                                 .build();
     }
 
+    public static BaseErrorResponse createBookCategoryCannotDeleteErrorResponse() {
+        return BaseErrorResponse.builder()
+                                .errorCode(HttpStatus.BAD_REQUEST.name())
+                                .errorMessage(ErrorCdMsg.FUNC_BOOK_CATEGORY_CANNOT_DELETE_ERR_MSG)
+                                .build();
+    }
+
     public static BaseErrorResponse createBookPublisherNotFoundErrorResponse() {
         return BaseErrorResponse.builder()
                                 .errorCode(HttpStatus.BAD_REQUEST.name())

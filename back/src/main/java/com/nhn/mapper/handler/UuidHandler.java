@@ -13,22 +13,27 @@ import org.apache.ibatis.type.MappedTypes;
 @MappedTypes(UUID.class)
 public class UuidHandler extends BaseTypeHandler<UUID> {
     @Override
-    public void setNonNullParameter(final PreparedStatement ps, final int i, final UUID parameter, final JdbcType jdbcType) throws SQLException {
-            ps.setString(i, parameter.toString());
+    public void setNonNullParameter(final PreparedStatement ps, final int i,
+                                    final UUID parameter,
+                                    final JdbcType jdbcType) throws SQLException {
+        ps.setString(i, parameter.toString());
     }
 
     @Override
-    public UUID getNullableResult(final ResultSet rs, final String columnName) throws SQLException {
+    public UUID getNullableResult(final ResultSet rs,
+                                  final String columnName) throws SQLException {
         return UUID.fromString(rs.getString(columnName));
     }
 
     @Override
-    public UUID getNullableResult(final ResultSet rs, final int columnIndex) throws SQLException {
+    public UUID getNullableResult(final ResultSet rs,
+                                  final int columnIndex) throws SQLException {
         return UUID.fromString(rs.getString(columnIndex));
     }
 
     @Override
-    public UUID getNullableResult(final CallableStatement cs, final int columnIndex) throws SQLException {
+    public UUID getNullableResult(final CallableStatement cs,
+                                  final int columnIndex) throws SQLException {
         return UUID.fromString(cs.getString(columnIndex));
     }
 }

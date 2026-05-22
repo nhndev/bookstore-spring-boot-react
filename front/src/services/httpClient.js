@@ -1,8 +1,8 @@
 import axios from "axios";
 // import jwt_decode from 'jwt-decode'
-import messageUtil from "../utils/message.util";
 import store from "../redux/store";
 import { setErrorPage } from "../redux/slice/app.slice";
+import { showErrorDialog } from "../redux/slice/confirmDialog.slice";
 
 const httpClent = axios.create({
   // eslint-disable-next-line no-undef
@@ -59,7 +59,7 @@ httpClent.interceptors.response.use(
       store.dispatch(setErrorPage({ status, message: errorMessage }));
       return Promise.reject(error);
     }
-    messageUtil.showErrorMessage(errorMessage);
+    store.dispatch(showErrorDialog({ message: errorMessage || 'Đã xảy ra lỗi.' }));
     return Promise.reject(error);
   }
 );
