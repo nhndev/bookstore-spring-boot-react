@@ -161,6 +161,13 @@ public class ErrorMsgUtil {
                                 .build();
     }
 
+    public static BaseErrorResponse createBookPublisherCannotDeleteErrorResponse() {
+        return BaseErrorResponse.builder()
+                                .errorCode(HttpStatus.BAD_REQUEST.name())
+                                .errorMessage(ErrorCdMsg.FUNC_BOOK_PUBLISHER_CANNOT_DELETE_ERR_MSG)
+                                .build();
+    }
+
     public static BaseErrorResponse createBookPublisherNotFoundErrorResponse() {
         return BaseErrorResponse.builder()
                                 .errorCode(HttpStatus.BAD_REQUEST.name())
@@ -173,6 +180,13 @@ public class ErrorMsgUtil {
                                 .errorCode(HttpStatus.BAD_REQUEST.name())
                                 .errorMessage(MessageFormat.format(ErrorCdMsg.FUNC_BOOK_PUBLISHER_SLUG_EXISTS_ERR_MSG,
                                                                    slug))
+                                .build();
+    }
+
+    public static BaseErrorResponse createAuthorCannotDeleteErrorResponse() {
+        return BaseErrorResponse.builder()
+                                .errorCode(HttpStatus.BAD_REQUEST.name())
+                                .errorMessage(ErrorCdMsg.FUNC_BOOK_AUTHOR_CANNOT_DELETE_ERR_MSG)
                                 .build();
     }
 

@@ -72,6 +72,12 @@ public class AuthorService {
 
     @Transactional
     public void delete(final UUID id) {
+        this.authorRepository.findById(id)
+                             .orElseThrow(() -> new FuncErrorException(ErrorMsgUtil.createAuthorNotFoundErrorResponse()));
+        final int booksCount = this.authorMapper.countBooksReferencingAuthor(id);
+        if (booksCount > 0) {
+            throw new FuncErrorException(ErrorMsgUtil.createAuthorCannotDeleteErrorResponse());
+        }
         this.authorRepository.deleteById(id);
     }
 

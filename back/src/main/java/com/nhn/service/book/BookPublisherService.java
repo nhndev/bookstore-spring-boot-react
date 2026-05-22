@@ -68,6 +68,12 @@ public class BookPublisherService {
 
     @Transactional
     public void delete(final UUID id) {
+        this.publisherRepository.findById(id)
+                                .orElseThrow(() -> new FuncErrorException(ErrorMsgUtil.createBookPublisherNotFoundErrorResponse()));
+        final int booksCount = this.bookPublisherMapper.countBooksReferencingPublisher(id);
+        if (booksCount > 0) {
+            throw new FuncErrorException(ErrorMsgUtil.createBookPublisherCannotDeleteErrorResponse());
+        }
         this.publisherRepository.deleteById(id);
     }
 

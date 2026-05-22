@@ -30,11 +30,13 @@ public class ErrorCdMsg {
     public static final String FUNC_BOOK_CATEGORY_INVALID_DEPTH_ERR_MSG = "Hệ thống chỉ hỗ trợ tối đa {0} cấp danh mục sách. Vui lòng kiểm tra lại!";
     public static final String FUNC_BOOK_CATEGORY_CANNOT_DELETE_ERR_MSG = "Không thể xóa danh mục sách. Có sách đang sử dụng danh mục này hoặc danh mục con của nó. Vui lòng kiểm tra lại!";
 
-    public static final String FUNC_BOOK_PUBLISHER_NOT_FOUND_ERR_MSG   = "NXB không tồn tại trong hệ thống. Vui lòng kiểm tra lại!";
-    public static final String FUNC_BOOK_PUBLISHER_SLUG_EXISTS_ERR_MSG = "NXB [{0}] đã tồn tại trong hệ thống. Vui lòng kiểm tra lại!";
+    public static final String FUNC_BOOK_PUBLISHER_NOT_FOUND_ERR_MSG     = "NXB không tồn tại trong hệ thống. Vui lòng kiểm tra lại!";
+    public static final String FUNC_BOOK_PUBLISHER_SLUG_EXISTS_ERR_MSG   = "NXB [{0}] đã tồn tại trong hệ thống. Vui lòng kiểm tra lại!";
+    public static final String FUNC_BOOK_PUBLISHER_CANNOT_DELETE_ERR_MSG = "Không thể xóa NXB. Có sách đang sử dụng NXB này. Vui lòng kiểm tra lại!";
 
-    public static final String FUNC_BOOK_AUTHOR_NOT_FOUND_ERR_MSG   = "Tác giả không tồn tại trong hệ thống. Vui lòng kiểm tra lại!";
-    public static final String FUNC_BOOK_AUTHOR_SLUG_EXISTS_ERR_MSG = "Tác giả [{0}] đã tồn tại trong hệ thống. Vui lòng kiểm tra lại!";
+    public static final String FUNC_BOOK_AUTHOR_NOT_FOUND_ERR_MSG     = "Tác giả không tồn tại trong hệ thống. Vui lòng kiểm tra lại!";
+    public static final String FUNC_BOOK_AUTHOR_SLUG_EXISTS_ERR_MSG   = "Tác giả [{0}] đã tồn tại trong hệ thống. Vui lòng kiểm tra lại!";
+    public static final String FUNC_BOOK_AUTHOR_CANNOT_DELETE_ERR_MSG = "Không thể xóa tác giả. Có sách đang sử dụng tác giả này. Vui lòng kiểm tra lại!";
 
     public static final String FUNC_BOOK_NOT_FOUND_ERR_MSG   = "Sách không tồn tại trong hệ thống. Vui lòng kiểm tra lại!";
     public static final String FUNC_BOOK_SLUG_EXISTS_ERR_MSG = "Sách [{0}] đã tồn tại trong hệ thống. Vui lòng kiểm tra lại!";

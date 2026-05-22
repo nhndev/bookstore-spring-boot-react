@@ -35,4 +35,13 @@
             AND UNACCENT(LOWER(name)) LIKE CONCAT('%', UNACCENT(LOWER(#{name})), '%')
         </if>
     </sql>
+
+    <select id="countBooksReferencingPublisher" resultType="java.lang.Integer">
+        SELECT
+            COUNT(*)
+        FROM
+            bs_books
+        WHERE
+            publisher_id = CAST(#{publisherId} AS uuid)
+    </select>
 </mapper>

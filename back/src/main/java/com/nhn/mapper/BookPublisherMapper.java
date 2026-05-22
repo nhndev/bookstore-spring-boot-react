@@ -1,6 +1,7 @@
 package com.nhn.mapper;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.ibatis.annotations.Mapper;
 
@@ -12,4 +13,6 @@ public interface BookPublisherMapper {
     List<BookPublisher> search(BookPublisherSearchRequest request);
 
     Integer count(BookPublisherSearchRequest request);
+
+    int countBooksReferencingPublisher(UUID publisherId);
 }
