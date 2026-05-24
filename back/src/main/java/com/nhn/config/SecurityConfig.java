@@ -20,6 +20,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
+import com.nhn.properties.AppSetting;
 import com.nhn.service.user.UserDetailsServiceImpl;
 
 import lombok.RequiredArgsConstructor;
@@ -35,16 +36,19 @@ public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsServiceImpl;
 
+    private final AppSetting appSetting;
+
     /** 公開URL。 */
     private static final String[] publicUrls = {"/v3/api-docs/**",
                                                 "/swagger-ui/**",
                                                 "/swagger-ui.html",
-                                                "/api/v1/users/verify",
-                                                "/api/v1/users/resend-email-verification/**",
-                                                "/api/v1/users/forgot-password",
-                                                "/api/v1/users/reset-password",
                                                 "/api/v1/auth/login",
-                                                "/api/v1/auth/register"};
+                                                "/api/v1/auth/register",
+                                                "/api/v1/auth/refresh-token",
+                                                "/api/v1/auth/verify-email",
+                                                "/api/v1/auth/resend-email-verification",
+                                                "/api/v1/auth/forgot-password",
+                                                "/api/v1/auth/reset-password"};
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -67,9 +71,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
         final CorsConfiguration corsConfig = new CorsConfiguration();
-        corsConfig.setAllowedOrigins(List.of("*"));
+        corsConfig.setAllowedOrigins(List.of(this.appSetting.getOrigin().getWeb()));
         corsConfig.addAllowedMethod("*");
         corsConfig.addAllowedHeader("*");
+        corsConfig.setAllowCredentials(true);
         corsConfig.setExposedHeaders(Collections.singletonList("Content-Disposition"));
         corsConfig.setMaxAge(3600L);
         http.cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(request -> corsConfig));

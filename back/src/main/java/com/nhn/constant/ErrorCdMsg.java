@@ -22,6 +22,12 @@ public class ErrorCdMsg {
     public static final String FUNC_LOGIN_USER_INACTIVE_ERR_MSG            = "Tài khoản của bạn chưa được xác minh. Vui lòng thực hiện xác minh email để tiếp tục!";
     public static final String FUNC_VERIFY_EMAIL_ALREADY_ERR_MSG           = "Email của bạn đã được xác minh trước đó. Vui lòng đăng nhập để tiếp tục!";
     public static final String FUNC_VERIFY_EMAIL_INVALID_CODE_ERR_MSG      = "Mã xác minh không chính xác. Vui lòng kiểm tra lại!";
+    public static final String FUNC_VERIFY_EMAIL_RATE_LIMIT_ERR_MSG       = "Vui lòng đợi {0} phút giữa mỗi lần gửi email xác minh!";
+
+    public static final String FUNC_AUTH_REFRESH_TOKEN_INVALID_ERR_MSG = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!";
+    public static final String FUNC_AUTH_RESET_CODE_INVALID_ERR_MSG    = "Mã đặt lại mật khẩu không chính xác. Vui lòng kiểm tra lại!";
+    public static final String FUNC_AUTH_RESET_CODE_EXPIRED_ERR_MSG    = "Mã đặt lại mật khẩu đã hết hạn. Vui lòng yêu cầu mã mới!";
+    public static final String FUNC_AUTH_ACCOUNT_LOCKED_ERR_MSG        = "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên!";
 
     public static final String FUNC_PERMISSION_EXISTS_ERR_MSG = "Quyền [{0}] đã tồn tại trong hệ thống. Vui lòng kiểm tra lại!";
 

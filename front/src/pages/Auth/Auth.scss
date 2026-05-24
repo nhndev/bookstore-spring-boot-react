@@ -19,3 +19,27 @@
 .info {
   font-weight: 500;
 }
+
+.auth-page {
+  .submit-btn {
+    padding: 8px 12px;
+    width: 100%;
+    background-color: var(--orange-color);
+    color: white;
+    margin: 10px 0;
+  }
+}
+
+.verify-email-page {
+  .status-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+  .success { color: #28a745; }
+  .error { color: #dc3545; }
+}
+
+.resend-cooldown {
+  color: #6c757d;
+  font-size: 14px;
+}

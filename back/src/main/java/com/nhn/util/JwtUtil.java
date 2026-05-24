@@ -62,13 +62,14 @@ public class JwtUtil {
 
     public String generateToken(final String email,
                                 final TokenTypes tokenType) {
-        final SecretKey secretKey = Keys.hmacShaKeyFor(this.jwtSetting.getSecretKey()
-                                                                      .getBytes(StandardCharsets.UTF_8));
+        final long      expiration = tokenType == TokenTypes.REFRESH_TOKEN
+                                     ? this.jwtSetting.getExpirationRefreshToken()
+                                     : this.jwtSetting.getExpirationAccessToken();
+        final SecretKey secretKey  = Keys.hmacShaKeyFor(this.jwtSetting.getSecretKey()
+                                                                        .getBytes(StandardCharsets.UTF_8));
         return Jwts.builder().setSubject(email)
                    .setIssuedAt(new Date(System.currentTimeMillis()))
-                   .setExpiration(new Date(System.currentTimeMillis() +
-                                           1000 *
-                                                                        this.jwtSetting.getExpirationAccessToken()))
+                   .setExpiration(new Date(System.currentTimeMillis() + 1000 * expiration))
                    .claim("type", tokenType).claim("email", email)
                    .signWith(secretKey, SignatureAlgorithm.HS256).compact();
     }

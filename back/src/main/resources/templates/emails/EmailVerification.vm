@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="vi">
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+    <h3>Xin chào ${fullName},</h3>
+    <p>Chúc mừng bạn trở thành thành viên BookStore.</p>
+    <p>Tài khoản: ${email}</p>
+    <br/>
+    <h4><a href="${verifyURL}">Nhấn vào đây để kích hoạt tài khoản</a></h4>
+    <br/>
+    <p style="color: gray; font-size: 12px;">Link kích hoạt có hiệu lực trong 24 giờ.</p>
+</body>
+</html>

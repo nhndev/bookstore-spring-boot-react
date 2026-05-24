@@ -54,7 +54,9 @@ CREATE TABLE public.bs_users (
     "password" varchar(255) NOT NULL,
     "avatar_url" varchar(255),
     "reset_password_code" varchar(64),
+    "reset_password_code_expires_at" timestamp(6),
     "verification_code" varchar(64),
+    "last_verification_email_sent_at" timestamp(6),
     "status" int NOT NULL DEFAULT 0,
     "role_id" uuid NOT NULL,
     "created_at" timestamp(6) DEFAULT CURRENT_TIMESTAMP,
@@ -168,3 +170,21 @@ CREATE TABLE public.bs_author_book (
 ALTER TABLE public.bs_author_book ADD CONSTRAINT "bs_author_book_pkey" PRIMARY KEY ("author_id", "book_id");
 ALTER TABLE public.bs_author_book ADD CONSTRAINT "fk_author_book_author" FOREIGN KEY ("author_id") REFERENCES public.bs_authors ("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 ALTER TABLE public.bs_author_book ADD CONSTRAINT "fk_author_book_book" FOREIGN KEY ("book_id") REFERENCES public.bs_books ("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- ----------------------------
+-- Table structure for bs_refresh_tokens
+-- ----------------------------
+DROP TABLE IF EXISTS public.bs_refresh_tokens;
+CREATE TABLE public.bs_refresh_tokens (
+    "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+    "user_id" uuid NOT NULL,
+    "token" varchar(512) NOT NULL,
+    "expires_at" timestamp(6) NOT NULL,
+    "created_at" timestamp(6) DEFAULT CURRENT_TIMESTAMP
+);
+ALTER TABLE public.bs_refresh_tokens ADD CONSTRAINT "bs_refresh_tokens_pkey" PRIMARY KEY ("id");
+ALTER TABLE public.bs_refresh_tokens ADD CONSTRAINT "bs_refresh_tokens_token_unique" UNIQUE ("token");
+CREATE INDEX "idx_refresh_tokens_user_id" ON public.bs_refresh_tokens ("user_id");
+CREATE INDEX "idx_refresh_tokens_expires_at" ON public.bs_refresh_tokens ("expires_at");
+ALTER TABLE public.bs_refresh_tokens ADD CONSTRAINT "fk_refresh_tokens_user"
+    FOREIGN KEY ("user_id") REFERENCES public.bs_users ("id") ON DELETE CASCADE;

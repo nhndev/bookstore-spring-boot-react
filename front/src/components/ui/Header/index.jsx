@@ -5,7 +5,9 @@ import { BsCart2, BsPerson } from 'react-icons/bs';
 import './Header.scss';
 import SearchBar from '../SearchBar';
 import { useDispatch, useSelector } from 'react-redux';
-import { setUser } from '../../../redux/slice/auth.slice';
+import { clearUser } from '../../../redux/slice/auth.slice';
+import authService from '../../../services/auth.service';
+import { toast } from 'react-toastify';
 
 function Header() {
   const dispatch = useDispatch();
@@ -13,9 +15,16 @@ function Header() {
   const currentUser = useSelector((state) => state.auth);
 
   const onClickLogout = async () => {
-    dispatch(setUser({}));
-    localStorage.removeItem('accessToken');
-    navigate({ pathname: '/' });
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.log('Logout API error:', error);
+    } finally {
+      localStorage.removeItem('accessToken');
+      dispatch(clearUser());
+      navigate('/dang-nhap');
+      toast.success('Đăng xuất thành công!');
+    }
   };
 
   return (
@@ -35,7 +44,7 @@ function Header() {
             <div className="d-flex align-items-center right">
               {currentUser && currentUser?.fullName ? (
                 <div className="d-flex align-items-center user">
-                  <p className="me-3">Nhan Ngo</p>
+                  <p className="me-3">{currentUser?.fullName}</p>
                   <img className="avatar" src={currentUser?.avatarUrl} alt="" />
 
                   <div className="popup">

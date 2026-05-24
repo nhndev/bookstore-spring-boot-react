@@ -1,47 +1,74 @@
 import axios from "axios";
-// import jwt_decode from 'jwt-decode'
 import store from "../redux/store";
 import { setErrorPage } from "../redux/slice/app.slice";
 import { showErrorDialog } from "../redux/slice/confirmDialog.slice";
+import { clearUser } from "../redux/slice/auth.slice";
 
 const httpClent = axios.create({
-  // eslint-disable-next-line no-undef
   baseURL: process.env.REACT_APP_API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-  // withCredentials: true,
+  headers: { "Content-Type": "application/json" },
 });
+
+const refreshClient = axios.create({
+  baseURL: process.env.REACT_APP_API_URL,
+  headers: { "Content-Type": "application/json" },
+  withCredentials: true,
+});
+
+let refreshTokenPromise = null;
 
 httpClent.interceptors.request.use(async (config) => {
   const accessToken = localStorage.getItem("accessToken");
   if (accessToken) {
-    // const date = new Date()
-    // const decodedToken = jwt_decode(accessToken)
-    // if (decodedToken.exp < date.getTime() / 1000) {
-    //   try {
-    //     const res = await jwtAxios.post(`auth/refresh-token/`);
-    //     const newAccessToken = res.data.token
-    //     if (newAccessToken) {
-    //       localStorage.setItem('accessToken', newAccessToken)
-    //       config.headers.Authorization = `Bearer ${newAccessToken}`;
-    //     }
-    //   } catch (error) {
-    //     if (error.response.status === 403 || error.response.status === 401) {
-    //       localStorage.removeItem('accessToken')
-    //     }
-    //   }
-    // } else {
     config.headers.Authorization = `Bearer ${accessToken}`;
-    // }
+  }
+  if (config.url?.includes("/auth/logout")) {
+    config.withCredentials = true;
   }
   return config;
 });
 
 httpClent.interceptors.response.use(
   (res) => res.data,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
     const status = error?.response?.status;
+
+    if (status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      if (!refreshTokenPromise) {
+        refreshTokenPromise = refreshClient
+          .post("/api/v1/auth/refresh-token")
+          .then((res) => {
+            const newAccessToken = res.data?.data?.accessToken;
+            if (newAccessToken) {
+              localStorage.setItem("accessToken", newAccessToken);
+            }
+            return newAccessToken;
+          })
+          .catch((refreshError) => {
+            localStorage.removeItem("accessToken");
+            store.dispatch(clearUser());
+            window.location.href = "/dang-nhap";
+            return Promise.reject(refreshError);
+          })
+          .finally(() => {
+            refreshTokenPromise = null;
+          });
+      }
+
+      try {
+        const newToken = await refreshTokenPromise;
+        if (newToken) {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return httpClent(originalRequest);
+        }
+      } catch {
+        return Promise.reject(error);
+      }
+    }
+
     let errorMessage = error?.response?.data?.errorMessage;
     if (!errorMessage) {
       const errorMessages = error?.response?.data?.errorMessages;
@@ -49,17 +76,17 @@ httpClent.interceptors.response.use(
         errorMessage = errorMessages[0]?.message;
       }
     }
-    const showErrorPage = status === 401 || status === 403 || status >= 500;
-    if (showErrorPage) {
+
+    if (status === 403 || status >= 500) {
       if (!errorMessage) {
-        if (status === 401) errorMessage = 'Bạn cần đăng nhập để truy cập trang này.';
-        else if (status === 403) errorMessage = 'Bạn không có quyền truy cập trang này.';
-        else if (status >= 500) errorMessage = 'Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.';
+        if (status === 403) errorMessage = "Bạn không có quyền truy cập trang này.";
+        else if (status >= 500) errorMessage = "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.";
       }
       store.dispatch(setErrorPage({ status, message: errorMessage }));
       return Promise.reject(error);
     }
-    store.dispatch(showErrorDialog({ message: errorMessage || 'Đã xảy ra lỗi.' }));
+
+    store.dispatch(showErrorDialog({ message: errorMessage || "Đã xảy ra lỗi." }));
     return Promise.reject(error);
   }
 );

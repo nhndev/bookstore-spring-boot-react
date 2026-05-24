@@ -14,4 +14,6 @@ public class JwtSetting {
     private String secretKey;
 
     private long expirationAccessToken;
+
+    private long expirationRefreshToken;
 }

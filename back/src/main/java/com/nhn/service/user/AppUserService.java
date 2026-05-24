@@ -1,10 +1,13 @@
 package com.nhn.service.user;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -23,6 +26,7 @@ import com.nhn.enums.TokenTypes;
 import com.nhn.enums.UserStatusEnum;
 import com.nhn.exception.FuncErrorException;
 import com.nhn.mapstruct.UserMapping;
+import com.nhn.model.dto.request.user.ResetPasswordRequest;
 import com.nhn.model.dto.request.user.UserLoginRequest;
 import com.nhn.model.dto.request.user.UserRegisterRequest;
 import com.nhn.model.dto.response.BaseResponse;
@@ -34,13 +38,16 @@ import com.nhn.model.entity.rolePermission.Role;
 import com.nhn.model.entity.user.AppUser;
 import com.nhn.model.entity.user.AuthUser;
 import com.nhn.properties.AppSetting;
+import com.nhn.properties.JwtSetting;
 import com.nhn.repository.AppUserRepository;
 import com.nhn.repository.rolePermission.RoleRepository;
 import com.nhn.service.MailService;
+import com.nhn.util.CookieUtil;
 import com.nhn.util.ErrorMsgUtil;
 import com.nhn.util.JwtUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,6 +55,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class AppUserService {
+    private static final long VERIFICATION_EMAIL_COOLDOWN_MINUTES = 5;
+
     private final AuthenticationManager authManager;
 
     private final PasswordEncoder passwordEncoder;
@@ -64,75 +73,9 @@ public class AppUserService {
 
     private final AppSetting appSetting;
 
-    private RedisTemplate redisTemplate;
+    private final RefreshTokenService refreshTokenService;
 
-    //    public ResponsePageDTO findAll(final String keyword, final Pageable pageable) {
-    //
-    //        final Page<AppUser> userPage = this.appUserRepository.findAll(keyword, pageable);
-    //
-    //        final List<UserBasicDTO> userBasicDTOS = new ArrayList<>();
-    //        for (final AppUser appUser : userPage.getContent()) {
-    //            userBasicDTOS.add(this.userMapper.fromEntityToBasic(appUser));
-    //        }
-    //
-    //        return ResponsePageDTO.builder().data(userBasicDTOS)
-    //                              .limit(userPage.getSize())
-    //                              .currentPage(userPage.getNumber())
-    //                              .totalItems(userPage.getTotalElements())
-    //                              .totalPages(userPage.getTotalPages()).build();
-    //    }
-    //
-    //    public BaseResponse findByEmail(final String email) throws NotFoundException {
-    //
-    //        final AppUser user = this.appUserRepository.findByEmail(email)
-    //                                        .orElseThrow(() -> new NotFoundException("User not found: "
-    //                                                                                 + email));
-    //
-    //        return BaseResponse.builder()
-    //                               .data(this.userMapper.fromEntityToBasic(user))
-    //                               .isSuccess(true).build();
-    //    }
-    //
-    //    @Transactional
-    //    public BaseResponse createNewUser(final UserCreateDTO userCreateDTO,
-    //                                      final HttpServletRequest request) throws NotFoundException, MessagingException, IOException {
-    //        final Role role = this.roleRepository.findById(userCreateDTO.getRoleId())
-    //                                  .orElseThrow(() -> new NotFoundException("Not found role with id: "
-    //                                                                           + userCreateDTO.getRoleId()));
-    //
-    //        if (this.appUserRepository.existsByEmail(userCreateDTO.getEmail())) {
-    //            throw new BadRequestException("User with this email already exists");
-    //        }
-    //
-    //        final AppUser appUser = this.userMapper.fromCreateToEntity(userCreateDTO);
-    //
-    //        final String randomCode     = RandomString.make(64);
-    //        final String randomPassword = RandomString.make(8);
-    //
-    //        appUser.setVerificationCode(randomCode);
-    //        appUser.setRole(role);
-    //        appUser.setPassword(this.passwordEncoder.encode(randomPassword));
-    //
-    //        final String verifyURL = request.getRequestURL().toString()
-    //                                  .replace(request.getServletPath(), "")
-    //                           + "/api/v1/users/verify?code=" + randomCode;
-    //
-    //        final Map<String, String> properties = new HashMap<>();
-    //
-    //        properties.put("lastname", appUser.getLastname());
-    //        properties.put("firstname", appUser.getFirstname());
-    //        properties.put("email", appUser.getEmail());
-    //        properties.put("password", randomPassword);
-    //        properties.put("link", verifyURL);
-    //
-    //        final UserBasicDTO userBasicDTO = this.userMapper.fromEntityToBasic(this.appUserRepository.save(appUser));
-    //
-    //        this.sendEmailService.sendVerifyAccountCreate(properties,
-    //                                                 appUser.getEmail());
-    //
-    //        return BaseResponse.builder().data(userBasicDTO).isSuccess(true)
-    //                               .build();
-    //    }
+    private final JwtSetting jwtSetting;
 
     @Transactional
     public BaseResponse register(final UserRegisterRequest request,
@@ -148,13 +91,13 @@ public class AppUserService {
 
         final String  password         = request.getPassword();
         final String  fullName         = request.getFullName();
-        final String  verificationCode = RandomStringUtils.random(64, true,
-                                                                  true);
+        final String  verificationCode = RandomStringUtils.random(64, true, true);
         final AppUser appUser          = AppUser.builder().email(email)
                                                 .password(this.passwordEncoder.encode(password))
                                                 .verificationCode(verificationCode)
                                                 .fullName(fullName).role(role)
                                                 .status(UserStatusEnum.INACTIVE.getCode())
+                                                .lastVerificationEmailSentAt(Date.from(Instant.now()))
                                                 .build();
         this.appUserRepository.save(appUser);
 
@@ -163,17 +106,33 @@ public class AppUserService {
         return BaseResponse.builder().data(AppMsg.FUNC_SUCCESS_MSG).build();
     }
 
-    public BaseResponse<UserLoginResponse> login(final UserLoginRequest request) {
+    public BaseResponse<UserLoginResponse> login(final UserLoginRequest request,
+                                                  final HttpServletResponse response) {
         final String email    = request.getEmail();
         final String password = request.getPassword();
         try {
-            final Authentication authentication = this.authManager.authenticate(new UsernamePasswordAuthenticationToken(email,
-                                                                                                                        password));
-            SecurityContextHolder.getContext()
-                                 .setAuthentication(authentication);
+            final Authentication authentication = this.authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(email, password));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            final String accessToken = this.jwtUtil.generateToken(email,
-                                                                  TokenTypes.ACCESS_TOKEN);
+            final String accessToken  = this.jwtUtil.generateToken(email, TokenTypes.ACCESS_TOKEN);
+            final String refreshToken = this.jwtUtil.generateToken(email, TokenTypes.REFRESH_TOKEN);
+
+            // Get user ID for refresh token storage
+            final AuthUser authUser = (AuthUser) authentication.getPrincipal();
+            final UUID     userId   = authUser.getUser().getId();
+
+            // Delete existing refresh tokens then create new one
+            this.refreshTokenService.deleteByUserId(userId);
+            this.refreshTokenService.createRefreshToken(userId, refreshToken,
+                new Date(System.currentTimeMillis() + 1000 * this.jwtSetting.getExpirationRefreshToken()));
+
+            // Set HTTP-only cookie
+            final boolean        isSecure = this.appSetting.getOrigin().getWeb().startsWith("https");
+            final ResponseCookie cookie   = CookieUtil.createRefreshTokenCookie(
+                refreshToken, this.jwtSetting.getExpirationRefreshToken(), isSecure);
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
             return BaseResponse.<UserLoginResponse>builder()
                                .data(UserLoginResponse.builder()
                                                       .accessToken(accessToken)
@@ -218,19 +177,61 @@ public class AppUserService {
     public BaseResponse resendEmailVerification(final String email) throws Exception {
         final AppUser user = this.appUserRepository.findByEmail(email)
                                                    .orElseThrow(() -> new FuncErrorException(ErrorMsgUtil.createEmailNotExistsErrorResponse(email)));
-        // check if user is already active
         if (user.getStatus() == UserStatusEnum.ACTIVE.getCode()) {
             throw new FuncErrorException(ErrorMsgUtil.createVerifyEmailAlreadyErrorResponse());
         }
 
-        final String verificationCode = RandomStringUtils.random(64, true,
-                                                                 true);
+        if (Objects.nonNull(user.getLastVerificationEmailSentAt())) {
+            final Instant cooldownEnd = user.getLastVerificationEmailSentAt().toInstant()
+                                            .plus(VERIFICATION_EMAIL_COOLDOWN_MINUTES, ChronoUnit.MINUTES);
+            if (Instant.now().isBefore(cooldownEnd)) {
+                throw new FuncErrorException(ErrorMsgUtil.createVerifyEmailRateLimitErrorResponse(VERIFICATION_EMAIL_COOLDOWN_MINUTES));
+            }
+        }
+
+        final String verificationCode = RandomStringUtils.random(64, true, true);
         user.setVerificationCode(verificationCode);
+        user.setLastVerificationEmailSentAt(Date.from(Instant.now()));
 
         this.appUserRepository.save(user);
 
-        // send email to verify account
         this.sendEmailVerification(user);
+
+        return BaseResponse.builder().data(AppMsg.FUNC_SUCCESS_MSG).build();
+    }
+
+    @Transactional
+    public BaseResponse forgotPassword(final String email) throws Exception {
+        final Optional<AppUser> optUser = this.appUserRepository.findByEmail(email);
+        if (optUser.isPresent()) {
+            final AppUser user      = optUser.get();
+            final String  resetCode = RandomStringUtils.random(64, true, true);
+            user.setResetPasswordCode(resetCode);
+            user.setResetPasswordCodeExpiresAt(Date.from(Instant.now().plus(15, ChronoUnit.MINUTES)));
+            this.appUserRepository.save(user);
+            this.sendResetPasswordEmail(user);
+        }
+        // Always return success — prevent email enumeration
+        return BaseResponse.builder().data(AppMsg.FUNC_SUCCESS_MSG).build();
+    }
+
+    @Transactional
+    public BaseResponse resetPassword(final ResetPasswordRequest request) {
+        final AppUser user = this.appUserRepository.findByEmail(request.getEmail())
+                                                   .orElseThrow(() -> new FuncErrorException(ErrorMsgUtil.createEmailNotExistsErrorResponse(request.getEmail())));
+        if (!StringUtils.equals(request.getResetPasswordCode(), user.getResetPasswordCode())) {
+            throw new FuncErrorException(ErrorMsgUtil.createResetCodeInvalidErrorResponse());
+        }
+        if (user.getResetPasswordCodeExpiresAt() == null || user.getResetPasswordCodeExpiresAt().before(new Date())) {
+            throw new FuncErrorException(ErrorMsgUtil.createResetCodeExpiredErrorResponse());
+        }
+        user.setPassword(this.passwordEncoder.encode(request.getNewPassword()));
+        user.setResetPasswordCode(null);
+        user.setResetPasswordCodeExpiresAt(null);
+        this.appUserRepository.save(user);
+
+        // Invalidate all refresh tokens
+        this.refreshTokenService.deleteByUserId(user.getId());
 
         return BaseResponse.builder().data(AppMsg.FUNC_SUCCESS_MSG).build();
     }
@@ -259,8 +260,8 @@ public class AppUserService {
     private void sendEmailVerification(final AppUser user) throws Exception {
         final String        email         = user.getEmail();
         final UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(this.appSetting.getOrigin()
-                                                                                            .getApi()
-                                                                             + "/api/v1/users/verify")
+                                                                                            .getWeb()
+                                                                             + "/xac-minh-email")
                                                                 .queryParam(AppUser.Fields.verificationCode,
                                                                             user.getVerificationCode())
                                                                 .queryParam(AppUser.Fields.email,
@@ -278,77 +279,20 @@ public class AppUserService {
                                           paramMap, "EmailVerification.vm");
     }
 
+    private void sendResetPasswordEmail(final AppUser user) throws Exception {
+        final String        email         = user.getEmail();
+        final UriComponents uriComponents = UriComponentsBuilder
+            .fromHttpUrl(this.appSetting.getOrigin().getWeb() + "/dat-lai-mat-khau")
+            .queryParam("resetPasswordCode", user.getResetPasswordCode())
+            .queryParam(AppUser.Fields.email, email)
+            .build();
 
-    //
-    //    public BaseResponse changePassword(final String email,
-    //                                       final UserChangePasswordDTO userChangePasswordDTO) throws NotFoundException {
-    //        final AppUser user = this.appUserRepository.findByEmail(email)
-    //                                        .orElseThrow(() -> new NotFoundException("User not found: "
-    //                                                                                 + email));
-    //
-    //        if (this.passwordEncoder.matches(userChangePasswordDTO.getCurrentPassword(),
-    //                                    user.getPassword())) {
-    //            user.setPassword(this.passwordEncoder.encode(userChangePasswordDTO.getNewPassword()));
-    //
-    //            return BaseResponse.builder()
-    //                                   .data(this.userMapper.fromEntityToBasic(this.appUserRepository.save(user)))
-    //                                   .isSuccess(true).build();
-    //
-    //        } else {
-    //            throw new BadRequestException("Current password is invalid");
-    //        }
-    //    }
-    //
-    //    @Transactional
-    //    public void forgotPassword(final UserForgotPasswordDTO forgotPasswordDTO) throws MessagingException, IOException, NotFoundException {
-    //        final String email = forgotPasswordDTO.getEmail();
-    //
-    //        final AppUser user = this.appUserRepository.findByEmail(email)
-    //                                        .orElseThrow(() -> new NotFoundException("User not found: "
-    //                                                                                 + email));
-    //
-    //        final String randomCode = RandomString.make(64);
-    //
-    //        user.setResetPasswordCode(randomCode);
-    //        this.appUserRepository.save(user);
-    //
-    //        final String              link       = this.rootUrl
-    //                                         + "/swagger-ui/index.html#/user-controller/resetPassword?code="
-    //                                         + randomCode;
-    //        final Map<String, String> properties = new HashMap<>();
-    //
-    //        properties.put("lastname", user.getLastname());
-    //        properties.put("firstname", user.getFirstname());
-    //        properties.put("link", link);
-    //
-    //        this.sendEmailService.sendForgotPasswordEmail(properties, user.getEmail());
-    //
-    //    }
-    //
-    //    public BaseResponse resetPassword(final UserResetPasswordDTO userResetPasswordDTO) {
-    //        final AppUser user = this.appUserRepository.findByResetPasswordCode(userResetPasswordDTO.getResetPasswordCode())
-    //                                        .orElseThrow(() -> new BadRequestException("Code is invalid"));
-    //
-    //        user.setPassword(this.passwordEncoder.encode(userResetPasswordDTO.getPassword()));
-    //        user.setResetPasswordCode(null);
-    //
-    //        return BaseResponse.builder()
-    //                               .data(this.userMapper.fromEntityToBasic(this.appUserRepository.save(user)))
-    //                               .isSuccess(true).build();
-    //    }
-    //
-    //    public BaseResponse updateProfile(final String email,
-    //                                      final UserUpdateDTO userUpdateDTO) throws NotFoundException {
-    //
-    //        final AppUser user = this.appUserRepository.findByEmail(email)
-    //                                        .orElseThrow(() -> new NotFoundException("User not found: "
-    //                                                                                 + email));
-    //
-    //        user.setFirstname(userUpdateDTO.getFirstname());
-    //        user.setLastname(userUpdateDTO.getLastname());
-    //
-    //        return BaseResponse.builder()
-    //                               .data(this.userMapper.fromEntityToBasic(this.appUserRepository.save(user)))
-    //                               .isSuccess(true).build();
-    //    }
+        final Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put(AppUser.Fields.fullName, user.getFullName());
+        paramMap.put("resetURL", uriComponents.toString());
+
+        this.mailService.sendTemplateMail(email,
+                                          "Đặt lại mật khẩu BookStore",
+                                          paramMap, "EmailResetPassword.vm");
+    }
 }

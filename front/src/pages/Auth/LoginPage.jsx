@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Container, Modal } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import authService from '../../services/auth.service';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../../redux/slice/auth.slice';
@@ -40,7 +41,10 @@ function LoginPage() {
       );
       navigate({ pathname: '/' });
     } catch (error) {
-      // TODO
+      const errorMessage = error?.response?.data?.errorMessage;
+      if (errorMessage) {
+        toast.error(errorMessage);
+      }
     } finally {
       dispatch(setLoading(false));
     }

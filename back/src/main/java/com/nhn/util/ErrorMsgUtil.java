@@ -107,6 +107,42 @@ public class ErrorMsgUtil {
                                 .build();
     }
 
+    public static BaseErrorResponse createVerifyEmailRateLimitErrorResponse(final long minutes) {
+        return BaseErrorResponse.builder()
+                                .errorCode(HttpStatus.TOO_MANY_REQUESTS.name())
+                                .errorMessage(MessageFormat.format(ErrorCdMsg.FUNC_VERIFY_EMAIL_RATE_LIMIT_ERR_MSG,
+                                                                   minutes))
+                                .build();
+    }
+
+    public static BaseErrorResponse createRefreshTokenInvalidErrorResponse() {
+        return BaseErrorResponse.builder()
+                                .errorCode(HttpStatus.UNAUTHORIZED.name())
+                                .errorMessage(ErrorCdMsg.FUNC_AUTH_REFRESH_TOKEN_INVALID_ERR_MSG)
+                                .build();
+    }
+
+    public static BaseErrorResponse createResetCodeInvalidErrorResponse() {
+        return BaseErrorResponse.builder()
+                                .errorCode(HttpStatus.BAD_REQUEST.name())
+                                .errorMessage(ErrorCdMsg.FUNC_AUTH_RESET_CODE_INVALID_ERR_MSG)
+                                .build();
+    }
+
+    public static BaseErrorResponse createResetCodeExpiredErrorResponse() {
+        return BaseErrorResponse.builder()
+                                .errorCode(HttpStatus.BAD_REQUEST.name())
+                                .errorMessage(ErrorCdMsg.FUNC_AUTH_RESET_CODE_EXPIRED_ERR_MSG)
+                                .build();
+    }
+
+    public static BaseErrorResponse createAccountLockedErrorResponse() {
+        return BaseErrorResponse.builder()
+                                .errorCode(HttpStatus.BAD_REQUEST.name())
+                                .errorMessage(ErrorCdMsg.FUNC_AUTH_ACCOUNT_LOCKED_ERR_MSG)
+                                .build();
+    }
+
     public static BaseErrorResponse createEmailExistsErrorResponse(final String email) {
         return BaseErrorResponse.builder()
                                 .errorCode(HttpStatus.BAD_REQUEST.name())

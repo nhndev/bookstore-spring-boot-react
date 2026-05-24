@@ -1,11 +1,17 @@
 import React, { useEffect } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { toast } from 'react-toastify';
 import { routes } from '../../../routes';
 import domUtil from '../../../utils/dom.util';
+import { clearUser } from '../../../redux/slice/auth.slice';
+import authService from '../../../services/auth.service';
 import './AdminSideBar.scss';
 
 function AdminSideBar() {
   const location = useLocation();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   // Auto expand parent menu if child is active on mount/path change
   useEffect(() => {
@@ -29,15 +35,16 @@ function AdminSideBar() {
   }, [location.pathname]);
 
   const handleLogout = async () => {
-    // const resultLogout = await authApi.logout()
-    // console.log(resultLogout)
-    // dispatch(logout())
-    // dispatch(destroy())
-    // const token = localStorage.getItem('accessToken')
-    // if (token) {
-    //   localStorage.removeItem('accessToken')
-    // }
-    // navigate({ pathname: '/' })
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.log('Logout API error:', error);
+    } finally {
+      localStorage.removeItem('accessToken');
+      dispatch(clearUser());
+      navigate('/dang-nhap');
+      toast.success('Đăng xuất thành công!');
+    }
   };
 
   return (

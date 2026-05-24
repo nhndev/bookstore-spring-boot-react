@@ -19,5 +19,6 @@ public class AppSetting {
     @Data
     public static class Origin {
         private String api;
+        private String web;
     }
 }

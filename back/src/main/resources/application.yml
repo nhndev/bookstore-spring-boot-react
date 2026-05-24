@@ -4,7 +4,7 @@ server:
 app:
   origin:
     api: http://localhost:8080
-    web: http://localhost:4200
+    web: http://localhost:4000
 
 spring:
   application:
@@ -61,6 +61,7 @@ mybatis:
 jwt:
   secret-key: changeme
   expiration-accessToken: 86400
+  expiration-refresh-token: 604800
 
 #Cloudinary
 cloudinary:

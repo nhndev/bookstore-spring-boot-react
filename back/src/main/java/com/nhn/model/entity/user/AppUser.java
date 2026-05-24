@@ -1,6 +1,7 @@
 package com.nhn.model.entity.user;
 
 import java.io.Serial;
+import java.util.Date;
 import java.util.UUID;
 
 import org.hibernate.annotations.DynamicUpdate;
@@ -52,6 +53,12 @@ public class AppUser extends BaseEntity {
 
     @Column(name = "reset_password_code", length = 64)
     private String resetPasswordCode;
+
+    @Column(name = "reset_password_code_expires_at")
+    private Date resetPasswordCodeExpiresAt;
+
+    @Column(name = "last_verification_email_sent_at")
+    private Date lastVerificationEmailSentAt;
 
     private Integer status;
 
